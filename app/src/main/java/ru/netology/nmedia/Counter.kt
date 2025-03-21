@@ -2,19 +2,32 @@ package ru.netology.nmedia
 
 object Counter {
     fun localizeCount(number: UInt): String {
-        when {
-            number < 1000u -> return number.toString()
+        return when {
+            number < 1000u -> number.toString()
             number < 10_000u -> {
-                return String.format("%.1fK", ((number / 100u).toInt() / 10.0))
+                String.format("%.1f", ((number / 100u).toInt() / 10.0)).let {
+                    if (it.last().toString() == "0") {
+                        return it.dropLast(2) + "K"
+                    }
+                    return it + "K"
+                }
             }
+
             number < 1_000_000u -> {
-                return String.format("%dK", (number / 1000u).toInt())
+                String.format("%dK", (number / 1000u).toInt())
             }
-            number == 1_000_000u -> return "1M"
+
+            number == 1_000_000u -> "1M"
             1_000_000u < number -> {
-                return String.format("%.1fM", (number / 1_000_000u))
+                String.format("%.1f", ((number / 100u).toInt() / 10.0)).let {
+                    if (it.last().toString() == "0") {
+                        return it.dropLast(2) + "M"
+                    }
+                    return it + "M"
+                }
             }
-            else -> return ""
+
+            else -> ""
         }
     }
 }

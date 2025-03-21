@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         var shared: UInt = 0u
-        var viewed: UInt = 1809u
+        var viewed: UInt = 1_000_000u
         val post = Post(
             id = 1u,
             author = "Нетология. Университет интернет-профессий будущего",
