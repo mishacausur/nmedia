@@ -1,4 +1,5 @@
 package ru.netology.nmedia
+
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -14,13 +15,13 @@ class MainActivity : AppCompatActivity() {
 
         var shared: UInt = 0u
         var viewed: UInt = 710_000u
-        var liked: UInt = 1_999u
+        var liked: UInt = 2_000u
         val post = Post(
             id = 1u,
             author = "Нетология. Университет интернет-профессий будущего",
             published = "21 мая в 18:36",
             content = "Привет, это новая Нетология! Когда-то Нетология начиналась с интенсивов по онлайн-маркетингу. Затем появились курсы по дизайну, разработке, аналитике и управлению. Мы растём сами и помогаем расти студентам: от новичков до уверенных профессионалов. Но самое важное остаётся с нами: мы верим, что в каждом уже есть сила, которая заставляет хотеть больше, целиться выше, бежать быстрее. Наша миссия — помочь встать на путь роста и начать цепочку перемен → http://netolo.gy/fyb",
-            isLiked = false
+            isLiked = true
         )
 
         with(binding) {
@@ -30,7 +31,13 @@ class MainActivity : AppCompatActivity() {
             shareCount.text = Counter.localizeCount(shared)
             viewsCount.text = Counter.localizeCount(viewed)
             likesCount.text = Counter.localizeCount(liked)
-            likes.setImageResource(R.drawable.ic_like_24)
+            likes.setImageResource(
+                if (post.isLiked) {
+                    R.drawable.ic_liked_24
+                } else {
+                    R.drawable.ic_like_24
+                }
+            )
             likes.setOnClickListener {
                 post.isLiked = !post.isLiked
                 if (post.isLiked) {
@@ -38,13 +45,13 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     liked--
                 }
-                    likes.setImageResource(
-                        if (post.isLiked) {
-                            R.drawable.ic_liked_24
-                        } else {
-                            R.drawable.ic_like_24
-                        }
-                    )
+                likes.setImageResource(
+                    if (post.isLiked) {
+                        R.drawable.ic_liked_24
+                    } else {
+                        R.drawable.ic_like_24
+                    }
+                )
                 likesCount.text = Counter.localizeCount(liked)
             }
             share.setOnClickListener {
