@@ -1,5 +1,4 @@
 package ru.netology.nmedia
-
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -14,7 +13,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         var shared: UInt = 0u
-        var viewed: UInt = 1_000_000u
+        var viewed: UInt = 710_000u
+        var liked: UInt = 1_999u
         val post = Post(
             id = 1u,
             author = "Нетология. Университет интернет-профессий будущего",
@@ -27,12 +27,17 @@ class MainActivity : AppCompatActivity() {
             author.text = post.author
             published.text = post.published
             content.text = post.content
-            shareCount.text = shared.toString()
+            shareCount.text = Counter.localizeCount(shared)
             viewsCount.text = Counter.localizeCount(viewed)
-            likesCount.text = if (post.isLiked) "1" else "0"
+            likesCount.text = Counter.localizeCount(liked)
             likes.setImageResource(R.drawable.ic_like_24)
             likes.setOnClickListener {
                 post.isLiked = !post.isLiked
+                if (post.isLiked) {
+                    liked++
+                } else {
+                    liked--
+                }
                     likes.setImageResource(
                         if (post.isLiked) {
                             R.drawable.ic_liked_24
@@ -40,7 +45,7 @@ class MainActivity : AppCompatActivity() {
                             R.drawable.ic_like_24
                         }
                     )
-                likesCount.text = if (post.isLiked) "1" else "0"
+                likesCount.text = Counter.localizeCount(liked)
             }
             share.setOnClickListener {
                 shared++
