@@ -20,6 +20,9 @@ class MainActivity : AppCompatActivity() {
                 author.text = post.author
                 published.text = post.published
                 content.text = post.content
+                likesCount.text = Counter.localizeCount(post.liked)
+                shareCount.text = Counter.localizeCount(post.shares)
+                viewsCount.text = Counter.localizeCount(post.views)
                 likes.setImageResource(
                     if (post.isLiked) {
                         R.drawable.ic_liked_24
@@ -32,22 +35,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.likes.observe(this) {
-            with(binding) {
-                likesCount.text = Counter.localizeCount(it)
-            }
-        }
-        viewModel.shares.observe(this) {
-            with(binding) {
-                shareCount.text = Counter.localizeCount(it)
-            }
-        }
-
-        viewModel.views.observe(this) {
-            with(binding) {
-                viewsCount.text = Counter.localizeCount(it)
-            }
-        }
         binding.likes.setOnClickListener {
             viewModel.like()
         }
