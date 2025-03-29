@@ -8,5 +8,5 @@ data class Post(
     val isLiked: Boolean,
     val shares: UInt,
     val views: UInt,
-    val liked: UInt,
+    val likes: UInt,
 )
