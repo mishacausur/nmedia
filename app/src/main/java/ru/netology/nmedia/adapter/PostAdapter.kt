@@ -2,6 +2,7 @@ package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -11,7 +12,7 @@ import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 
 enum class PostAction {
-    like, share
+    like, share, remove
 }
 
 data class Action(
@@ -59,6 +60,20 @@ class PostViewHolder(
         }
         views.setImageResource(R.drawable.ic_eye)
         share.setImageResource(R.drawable.ic_share)
+        menu.setOnClickListener {
+            PopupMenu(it.context, it).apply {
+                inflate(R.menu.post_actions)
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.remove -> {
+                            onActionListener(Action(PostAction.remove, post))
+                            true
+                        }
+                        else -> false
+                    }
+                }
+            }.show()
+        }
     }
 }
 

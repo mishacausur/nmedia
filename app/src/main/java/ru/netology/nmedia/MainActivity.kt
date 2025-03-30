@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
         when (it.action) {
             PostAction.like -> viewModel.like(it.post.id)
             PostAction.share -> viewModel.share(it.post.id)
+            PostAction.remove -> viewModel.remove(it.post.id)
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
