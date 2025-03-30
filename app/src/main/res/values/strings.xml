@@ -2,4 +2,6 @@
     <string name="app_name" translatable="false">NMedia</string>
     <string name="hello">NMedia!</string>
     <string name="remove_title">Remove</string>
+    <string name="text_hint">Add Post...</string>
+    <string name="empty_text">Post can\'t be empty</string>
 </resources>

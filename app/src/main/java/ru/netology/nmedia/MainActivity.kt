@@ -1,6 +1,7 @@
 package ru.netology.nmedia
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,7 @@ import ru.netology.nmedia.adapter.PostAction
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.databinding.ActivityMainBinding
 import ru.netology.nmedia.repository.PostViewModel
+import ru.netology.nmedia.utils.AndroidUtils
 
 class MainActivity : AppCompatActivity() {
     private val viewModel: PostViewModel by viewModels()
@@ -25,7 +27,30 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.list.adapter = adapter
         viewModel.data.observe(this) { posts ->
-            adapter.submitList(posts)
+            val isNewPost = adapter.currentList.size < posts.size
+            adapter.submitList(posts) {
+                if (isNewPost) {
+                    binding.list.scrollToPosition(0)
+                }
+
+            }
+        }
+        with(binding) {
+            addButton.setOnClickListener {
+                val text = content.text.toString()
+                if (text.isBlank()) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        R.string.empty_text,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@setOnClickListener
+                }
+                viewModel.save(text)
+                content.setText("")
+                content.clearFocus()
+                AndroidUtils.hideKeyboard(content)
+            }
         }
 
     }

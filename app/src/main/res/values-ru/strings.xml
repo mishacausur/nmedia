@@ -2,4 +2,6 @@
 <resources>
     <string name="hello">НМедиа!</string>
     <string name="remove_title">Удалить</string>
+    <string name="text_hint">Добавить пост</string>
+    <string name="empty_text">Пост не может быть пустым</string>
 </resources>
