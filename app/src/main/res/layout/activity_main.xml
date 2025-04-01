@@ -11,9 +11,18 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/barrier_bottom"
+        app:layout_constraintBottom_toTopOf="@id/editing_view"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/card_post" />
+
+    <include
+        android:id="@+id/editing_view"
+        layout="@layout/editing_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/barrier_bottom"
+        tools:context=".MainActivity"
+        />
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier_bottom"

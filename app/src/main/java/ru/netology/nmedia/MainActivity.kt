@@ -1,6 +1,7 @@
 package ru.netology.nmedia
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -38,10 +39,23 @@ class MainActivity : AppCompatActivity() {
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.list.adapter = adapter
+
         viewModel.edited.observe(this) {
             if (it.id != 0u) {
-                binding.content.setText(it.content)
-                binding.content.requestFocus()
+                with(binding) {
+                    editingView.editTitle.setText(it.author)
+                    editingView.postTitle.setText(it.content)
+                    content.setText(it.content)
+                    content.requestFocus()
+                }
+
+            }
+        }
+        viewModel.isEditing.observe(this) {
+            if (it) {
+                binding.editingView.group.visibility = View.VISIBLE
+            } else {
+                binding.editingView.group.visibility = View.GONE
             }
         }
         viewModel.data.observe(this) { posts ->
@@ -50,10 +64,14 @@ class MainActivity : AppCompatActivity() {
                 if (isNewPost) {
                     binding.list.scrollToPosition(0)
                 }
-
             }
         }
         with(binding) {
+            editingView.close.setOnClickListener {
+                viewModel.cancel()
+                content.setText("")
+                content.clearFocus()
+            }
             addButton.setOnClickListener {
                 val text = content.text.toString()
                 if (text.isBlank()) {
