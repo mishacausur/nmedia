@@ -11,6 +11,8 @@
         android:layout_height="wrap_content"
         android:padding="12dp"
         android:src="@drawable/ic_edit_24"
+        app:layout_constraintStart_toStartOf="parenta"
+        app:layout_constraintTop_toTopOf="parent"
         android:tint="@android:color/holo_blue_dark" />
 
     <TextView
