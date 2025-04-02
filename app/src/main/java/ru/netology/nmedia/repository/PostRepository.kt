@@ -7,4 +7,6 @@ interface PostRepository {
     fun getAll(): LiveData<List<Post>>
     fun like(postId: UInt)
     fun share(postId: UInt)
+    fun remove(postId: UInt)
+    fun save(post: Post)
 }

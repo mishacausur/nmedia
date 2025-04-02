@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="hello">НМедиа!</string>
+    <string name="remove_title">Удалить</string>
+    <string name="text_hint">Добавить пост</string>
+    <string name="empty_text">Пост не может быть пустым</string>
+    <string name="edit">Редактировать</string>
+    <string name="delete">Удалить</string>
 </resources>

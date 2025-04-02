@@ -2,6 +2,7 @@ package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -10,15 +11,12 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 
-enum class PostAction {
-    like, share
+interface OnActionListener {
+    fun onLike(post: Post)
+    fun onShare(post: Post)
+    fun onEdit(post: Post)
+    fun onRemove(post: Post)
 }
-
-data class Action(
-    val action: PostAction,
-    val post: Post
-)
-typealias OnActionListener = (Action) -> Unit
 
 class PostAdapter(private val onActionListener: OnActionListener) :
     ListAdapter<Post, PostViewHolder>(PostDiffCallBack) {
@@ -52,13 +50,31 @@ class PostViewHolder(
             }
         )
         likes.setOnClickListener {
-            onActionListener(Action(PostAction.like, post))
+            onActionListener.onLike(post)
         }
         share.setOnClickListener {
-            onActionListener(Action(PostAction.share, post))
+            onActionListener.onShare(post)
         }
         views.setImageResource(R.drawable.ic_eye)
         share.setImageResource(R.drawable.ic_share)
+        menu.setOnClickListener {
+            PopupMenu(it.context, it).apply {
+                inflate(R.menu.post_actions)
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.remove -> {
+                            onActionListener.onRemove(post)
+                            true
+                        }
+                        R.id.edit -> {
+                            onActionListener.onEdit(post)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+            }.show()
+        }
     }
 }
 
