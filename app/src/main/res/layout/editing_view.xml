@@ -13,7 +13,7 @@
         android:src="@drawable/ic_edit_24"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:tint="@android:color/holo_blue_dark" />
+        app:tint="@android:color/holo_blue_dark" />
 
     <TextView
         android:id="@+id/edit_title"
@@ -22,8 +22,8 @@
         android:layout_marginHorizontal="16dp"
         android:singleLine="true"
         app:layout_constraintBottom_toTopOf="@id/post_title"
-        app:layout_constraintStart_toEndOf="@id/edit_icon"
         app:layout_constraintEnd_toStartOf="@id/close"
+        app:layout_constraintStart_toEndOf="@id/edit_icon"
         app:layout_constraintTop_toTopOf="@id/edit_icon"
         app:layout_constraintVertical_chainStyle="packed"
         tools:text="@sample/posts.json/data/author" />
@@ -35,9 +35,9 @@
         android:layout_marginStart="16dp"
         android:singleLine="true"
         app:layout_constraintBottom_toBottomOf="@id/edit_icon"
+        app:layout_constraintEnd_toStartOf="@id/close"
         app:layout_constraintStart_toEndOf="@id/edit_icon"
         app:layout_constraintTop_toBottomOf="@id/edit_title"
-        app:layout_constraintEnd_toStartOf="@id/close"
         tools:text="@sample/posts.json/data/author" />
 
     <ImageButton
@@ -46,9 +46,9 @@
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         android:padding="12dp"
-        app:srcCompat="@drawable/ic_close_24"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_close_24" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group"
