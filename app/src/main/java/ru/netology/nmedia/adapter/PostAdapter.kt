@@ -42,13 +42,7 @@ class PostViewHolder(
         likesCount.text = Counter.localizeCount(post.likes)
         shareCount.text = Counter.localizeCount(post.shares)
         viewsCount.text = Counter.localizeCount(post.views)
-        likes.setImageResource(
-            if (post.isLiked) {
-                R.drawable.ic_liked_24
-            } else {
-                R.drawable.ic_like_24
-            }
-        )
+        likes.isChecked = post.isLiked
         likes.setOnClickListener {
             onActionListener.onLike(post)
         }
