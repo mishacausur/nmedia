@@ -42,7 +42,10 @@ class PostViewHolder(
         likesCount.text = Counter.localizeCount(post.likes)
         shareCount.text = Counter.localizeCount(post.shares)
         viewsCount.text = Counter.localizeCount(post.views)
-        likes.isChecked = post.isLiked
+        likes.apply {
+            isChecked = post.isLiked
+            text = post.likes.toString()
+        }
         likes.setOnClickListener {
             onActionListener.onLike(post)
         }

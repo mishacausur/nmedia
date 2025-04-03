@@ -3,4 +3,9 @@
     <style name="App.Widget.Like" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
         <item name="buttonTint">@color/color_like_selector</item>
     </style>
+
+    <style name="App.Widget.LikeButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="iconTint">@color/color_like_selector</item>
+        <item name="minWidth">8dp</item>
+    </style>
 </resources>
