@@ -8,4 +8,9 @@
         <item name="iconTint">@color/color_like_selector</item>
         <item name="minWidth">8dp</item>
     </style>
+
+    <style name="App.Widget.IconToggle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="icon">@drawable/ic_more_vert_24</item>
+        <item name="iconTint">@color/color_like_selector</item>
+    </style>
 </resources>

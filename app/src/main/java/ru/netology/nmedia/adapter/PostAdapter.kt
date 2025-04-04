@@ -39,7 +39,6 @@ class PostViewHolder(
         author.text = post.author
         published.text = post.published
         content.text = post.content
-        likesCount.text = Counter.localizeCount(post.likes)
         shareCount.text = Counter.localizeCount(post.shares)
         viewsCount.text = Counter.localizeCount(post.views)
         likes.apply {
