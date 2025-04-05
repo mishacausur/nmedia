@@ -39,20 +39,21 @@ class PostViewHolder(
         author.text = post.author
         published.text = post.published
         content.text = post.content
-        shareCount.text = Counter.localizeCount(post.shares)
         viewsCount.text = Counter.localizeCount(post.views)
         likes.apply {
             isChecked = post.isLiked
-            text = post.likes.toString()
+            text = Counter.localizeCount(post.likes)
         }
         likes.setOnClickListener {
             onActionListener.onLike(post)
+        }
+        share.apply {
+            text = Counter.localizeCount(post.shares)
         }
         share.setOnClickListener {
             onActionListener.onShare(post)
         }
         views.setImageResource(R.drawable.ic_eye)
-        share.setImageResource(R.drawable.ic_share)
         menu.setOnClickListener {
             PopupMenu(it.context, it).apply {
                 inflate(R.menu.post_actions)
