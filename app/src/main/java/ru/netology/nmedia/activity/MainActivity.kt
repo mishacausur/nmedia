@@ -1,11 +1,13 @@
-package ru.netology.nmedia
+package ru.netology.nmedia.activity
 
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.launch
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnActionListener
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.databinding.ActivityMainBinding
@@ -40,13 +42,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.list.adapter = adapter
 
+        val newPostLauncher = registerForActivityResult(NewPostResultContract) { content ->
+            content ?: return@registerForActivityResult
+            viewModel.save(content)
+        }
+
         viewModel.edited.observe(this) {
             if (it.id != 0u) {
                 with(binding) {
                     editingView.editTitle.setText(it.author)
                     editingView.postTitle.setText(it.content)
-                    content.setText(it.content)
-                    content.requestFocus()
+
                 }
 
             }
@@ -66,28 +72,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        with(binding) {
-            editingView.close.setOnClickListener {
-                viewModel.cancel()
-                content.setText("")
-                content.clearFocus()
-            }
-            addButton.setOnClickListener {
-                val text = content.text.toString()
-                if (text.isBlank()) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        R.string.empty_text,
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return@setOnClickListener
-                }
-                viewModel.save(text)
-                content.setText("")
-                content.clearFocus()
-                AndroidUtils.hideKeyboard(content)
-            }
+        binding.addButton.setOnClickListener {
+            newPostLauncher.launch()
         }
-
     }
 }
