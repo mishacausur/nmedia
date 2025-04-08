@@ -47,23 +47,6 @@ class MainActivity : AppCompatActivity() {
             viewModel.save(content)
         }
 
-        viewModel.edited.observe(this) {
-            if (it.id != 0u) {
-                with(binding) {
-                    editingView.editTitle.setText(it.author)
-                    editingView.postTitle.setText(it.content)
-
-                }
-
-            }
-        }
-        viewModel.isEditing.observe(this) {
-            if (it) {
-                binding.editingView.group.visibility = View.VISIBLE
-            } else {
-                binding.editingView.group.visibility = View.GONE
-            }
-        }
         viewModel.data.observe(this) { posts ->
             val isNewPost = adapter.currentList.size < posts.size
             adapter.submitList(posts) {
@@ -72,6 +55,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
         binding.addButton.setOnClickListener {
             newPostLauncher.launch()
         }
