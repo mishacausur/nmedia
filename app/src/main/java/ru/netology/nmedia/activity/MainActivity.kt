@@ -57,7 +57,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.addButton.setOnClickListener {
-            newPostLauncher.launch()
+            newPostLauncher.launch(null)
+        }
+
+        viewModel.edited.observe(this) {
+            if (!it.content.isBlank()) {
+                newPostLauncher.launch(it.content)
+            }
+
         }
     }
 }
