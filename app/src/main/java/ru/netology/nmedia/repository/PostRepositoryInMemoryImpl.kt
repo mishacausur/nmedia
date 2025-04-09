@@ -3,6 +3,7 @@ package ru.netology.nmedia.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.dto.Post
+import java.net.URL
 
 class PostRepositoryInMemoryImpl : PostRepository {
 
@@ -17,6 +18,7 @@ class PostRepositoryInMemoryImpl : PostRepository {
             shares = 201u,
             views = 49u,
             likes = 299u,
+            video = URL("https://www.youtube.com/watch?v=1HWoXR8Qe4w&pp=ygUEbGlvbg%3D%3D")
         ),
         Post(
             id = nextId++,

@@ -1,5 +1,7 @@
 package ru.netology.nmedia.dto
 
+import java.net.URL
+
 data class Post(
     val id: UInt,
     val author: String,
@@ -9,4 +11,5 @@ data class Post(
     val shares: UInt,
     val views: UInt,
     val likes: UInt,
+    val video: URL? = null
 )

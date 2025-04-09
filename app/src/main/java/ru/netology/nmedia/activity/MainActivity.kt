@@ -1,5 +1,7 @@
 package ru.netology.nmedia.activity
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -14,6 +16,7 @@ import ru.netology.nmedia.databinding.ActivityMainBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostViewModel
 import ru.netology.nmedia.utils.AndroidUtils
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
     private val viewModel: PostViewModel by viewModels()
@@ -32,6 +35,10 @@ class MainActivity : AppCompatActivity() {
 
         override fun onRemove(post: Post) {
             viewModel.remove(post.id)
+        }
+
+        override fun onPlay(post: Post) {
+            openVideo(post.video.toString())
         }
     })
 
@@ -66,5 +73,10 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
+    }
+
+    private fun openVideo(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(intent)
     }
 }
