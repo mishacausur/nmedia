@@ -19,7 +19,6 @@ class PostViewModel: ViewModel() {
     private val repository: PostRepository = PostRepositoryInMemoryImpl()
     val data = repository.getAll()
     val edited = MutableLiveData(empty)
-    val isEditing = MutableLiveData<Boolean>(false)
     fun like(postId: UInt) = repository.like(postId)
     fun share(postId: UInt) = repository.share(postId)
     fun remove(postId: UInt) = repository.remove(postId)
@@ -30,17 +29,14 @@ class PostViewModel: ViewModel() {
                 repository.save(it.copy(content = text))
             }
         }
-        isEditing.value = false
         edited.value = empty
     }
 
     fun edit(post: Post) {
         edited.value = post
-        isEditing.value = true
     }
 
     fun cancel() {
-        isEditing.value = false
         edited.value = empty
     }
 }

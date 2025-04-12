@@ -1,17 +1,22 @@
-package ru.netology.nmedia
+package ru.netology.nmedia.activity
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.launch
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnActionListener
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.databinding.ActivityMainBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostViewModel
 import ru.netology.nmedia.utils.AndroidUtils
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
     private val viewModel: PostViewModel by viewModels()
@@ -31,6 +36,10 @@ class MainActivity : AppCompatActivity() {
         override fun onRemove(post: Post) {
             viewModel.remove(post.id)
         }
+
+        override fun onPlay(post: Post) {
+            openVideo(post.video.toString())
+        }
     })
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,24 +49,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.list.adapter = adapter
 
-        viewModel.edited.observe(this) {
-            if (it.id != 0u) {
-                with(binding) {
-                    editingView.editTitle.setText(it.author)
-                    editingView.postTitle.setText(it.content)
-                    content.setText(it.content)
-                    content.requestFocus()
-                }
+        val newPostLauncher = registerForActivityResult(NewPostResultContract) { content ->
+            content ?: return@registerForActivityResult
+            viewModel.save(content)
+        }
 
-            }
-        }
-        viewModel.isEditing.observe(this) {
-            if (it) {
-                binding.editingView.group.visibility = View.VISIBLE
-            } else {
-                binding.editingView.group.visibility = View.GONE
-            }
-        }
         viewModel.data.observe(this) { posts ->
             val isNewPost = adapter.currentList.size < posts.size
             adapter.submitList(posts) {
@@ -66,28 +62,21 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        with(binding) {
-            editingView.close.setOnClickListener {
-                viewModel.cancel()
-                content.setText("")
-                content.clearFocus()
-            }
-            addButton.setOnClickListener {
-                val text = content.text.toString()
-                if (text.isBlank()) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        R.string.empty_text,
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return@setOnClickListener
-                }
-                viewModel.save(text)
-                content.setText("")
-                content.clearFocus()
-                AndroidUtils.hideKeyboard(content)
-            }
+
+        binding.addButton.setOnClickListener {
+            newPostLauncher.launch(null)
         }
 
+        viewModel.edited.observe(this) {
+            if (!it.content.isBlank()) {
+                newPostLauncher.launch(it.content)
+            }
+
+        }
+    }
+
+    private fun openVideo(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(intent)
     }
 }
