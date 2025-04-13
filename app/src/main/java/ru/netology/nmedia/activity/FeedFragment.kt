@@ -3,23 +3,22 @@ package ru.netology.nmedia.activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.launch
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
+import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnActionListener
 import ru.netology.nmedia.adapter.PostAdapter
-import ru.netology.nmedia.databinding.ActivityMainBinding
+import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostViewModel
-import ru.netology.nmedia.utils.AndroidUtils
-import java.net.URL
 
-class MainActivity : AppCompatActivity() {
-    private val viewModel: PostViewModel by viewModels()
+class FeedFragment : Fragment() {
+    private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
     private val adapter = PostAdapter(object : OnActionListener {
         override fun onLike(post: Post) {
             viewModel.like(post.id)
@@ -42,19 +41,20 @@ class MainActivity : AppCompatActivity() {
         }
     })
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding = FragmentFeedBinding.inflate(
+            inflater,
+            container,
+            false
+        )
+
         binding.list.adapter = adapter
 
-        val newPostLauncher = registerForActivityResult(NewPostResultContract) { content ->
-            content ?: return@registerForActivityResult
-            viewModel.save(content)
-        }
-
-        viewModel.data.observe(this) { posts ->
+        viewModel.data.observe(viewLifecycleOwner) { posts ->
             val isNewPost = adapter.currentList.size < posts.size
             adapter.submitList(posts) {
                 if (isNewPost) {
@@ -64,15 +64,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.addButton.setOnClickListener {
-            newPostLauncher.launch(null)
+            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
-        viewModel.edited.observe(this) {
+        viewModel.edited.observe(viewLifecycleOwner) {
             if (!it.content.isBlank()) {
-                newPostLauncher.launch(it.content)
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_newPostFragment,
+                    Bundle().apply {
+                        textArg = it.content
+                    }
+                )
             }
 
         }
+        return binding.root
     }
 
     private fun openVideo(url: String) {
