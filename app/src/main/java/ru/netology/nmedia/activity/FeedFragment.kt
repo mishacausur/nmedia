@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.activity.PostFragment.Companion.longArgs
 import ru.netology.nmedia.adapter.OnActionListener
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
@@ -34,10 +35,20 @@ class FeedFragment : Fragment() {
 
         override fun onRemove(post: Post) {
             viewModel.remove(post.id)
+
         }
 
         override fun onPlay(post: Post) {
             openVideo(post.video.toString())
+        }
+
+        override fun onOpenPost(postId: Long) {
+            findNavController().navigate(
+                R.id.action_feedFragment_to_postFragment,
+                Bundle().apply {
+                    longArgs = postId
+                }
+            )
         }
     })
 

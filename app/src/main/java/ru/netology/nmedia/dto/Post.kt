@@ -3,7 +3,7 @@ package ru.netology.nmedia.dto
 import java.net.URL
 
 data class Post(
-    val id: UInt,
+    val id: Long,
     val author: String,
     val published: String,
     var content: String,

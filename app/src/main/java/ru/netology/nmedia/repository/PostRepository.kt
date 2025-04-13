@@ -5,8 +5,8 @@ import ru.netology.nmedia.dto.Post
 
 interface PostRepository {
     fun getAll(): LiveData<List<Post>>
-    fun like(postId: UInt)
-    fun share(postId: UInt)
-    fun remove(postId: UInt)
+    fun like(postId: Long)
+    fun share(postId: Long)
+    fun remove(postId: Long)
     fun save(post: Post)
 }
