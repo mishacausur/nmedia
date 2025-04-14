@@ -77,10 +77,12 @@ class PostViewHolder(
                             onActionListener.onRemove(post)
                             true
                         }
+
                         R.id.edit -> {
                             onActionListener.onEdit(post)
                             true
                         }
+
                         else -> false
                     }
                 }

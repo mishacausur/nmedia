@@ -23,8 +23,13 @@ class PostFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val binding = FragmentPostBinding.inflate(inflater, container, false)
+    ): View {
+        val binding = FragmentPostBinding.inflate(
+            inflater,
+            container,
+            false
+        )
+
         val postCardBinding = binding.post
 
         val viewHolder = PostViewHolder(
@@ -69,7 +74,6 @@ class PostFragment : Fragment() {
                 )
             }
         }
-
         return binding.root
     }
 
