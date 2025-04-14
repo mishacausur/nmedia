@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import ru.netology.nmedia.Counter
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnActionListener
@@ -72,6 +73,16 @@ class PostFragment : Fragment() {
                         textArg = it.content
                     }
                 )
+            }
+        }
+
+        viewModel.data.observe(viewLifecycleOwner) { posts ->
+            val _post = posts.find { it.id == postId } ?: return@observe
+            binding.post.likes.apply {
+                text = Counter.localizeCount(_post.likes)
+            }
+            binding.post.share.apply {
+                text = Counter.localizeCount(_post.shares)
             }
         }
         return binding.root
