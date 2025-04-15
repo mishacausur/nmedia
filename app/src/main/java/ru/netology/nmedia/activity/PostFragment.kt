@@ -78,12 +78,16 @@ class PostFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner) { posts ->
             val _post = posts.find { it.id == postId } ?: return@observe
-            binding.post.likes.apply {
-                text = Counter.localizeCount(_post.likes)
+            with(binding.post) {
+                likes.apply {
+                    text = Counter.localizeCount(_post.likes)
+                }
+                share.apply {
+                    text = Counter.localizeCount(_post.shares)
+                }
+                viewsCount.text = Counter.localizeCount(_post.views)
             }
-            binding.post.share.apply {
-                text = Counter.localizeCount(_post.shares)
-            }
+
         }
         return binding.root
     }
