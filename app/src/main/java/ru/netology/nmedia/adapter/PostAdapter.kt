@@ -18,6 +18,7 @@ interface OnActionListener {
     fun onEdit(post: Post)
     fun onRemove(post: Post)
     fun onPlay(post: Post)
+    fun onOpenPost(postId: Long)
 }
 
 class PostAdapter(private val onActionListener: OnActionListener) :
@@ -37,7 +38,14 @@ class PostViewHolder(
     private val binding: CardPostBinding,
     private val onActionListener: OnActionListener
 ) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(post: Post) = with(binding) {
+    fun bind(post: Post) {
+        bindPostData(post)
+        binding.root.setOnClickListener {
+            onActionListener.onOpenPost(post.id)
+        }
+    }
+
+    private fun bindPostData(post: Post) = with(binding) {
         author.text = post.author
         published.text = post.published
         content.text = post.content
@@ -55,11 +63,7 @@ class PostViewHolder(
         share.setOnClickListener {
             onActionListener.onShare(post)
         }
-        if (post.video == null) {
-            video.visibility = View.GONE
-        } else {
-            video.visibility = View.VISIBLE
-        }
+        video.visibility = if (post.video == null) View.GONE else View.VISIBLE
         video.setOnClickListener {
             onActionListener.onPlay(post)
         }
@@ -73,10 +77,12 @@ class PostViewHolder(
                             onActionListener.onRemove(post)
                             true
                         }
+
                         R.id.edit -> {
                             onActionListener.onEdit(post)
                             true
                         }
+
                         else -> false
                     }
                 }

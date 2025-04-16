@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import ru.netology.nmedia.dto.Post
 
 private val empty = Post(
-    id = 0u,
+    id = 0,
     author = "",
     content = "",
     published = "",
@@ -21,9 +21,9 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
     private val repository: PostRepository = PostRepositoryFilesImpl(application)
     val data = repository.getAll()
     val edited = MutableLiveData(empty)
-    fun like(postId: UInt) = repository.like(postId)
-    fun share(postId: UInt) = repository.share(postId)
-    fun remove(postId: UInt) = repository.remove(postId)
+    fun like(postId: Long) = repository.like(postId)
+    fun share(postId: Long) = repository.share(postId)
+    fun remove(postId: Long) = repository.remove(postId)
 
     fun save(text: String) {
         edited.value?.let {
