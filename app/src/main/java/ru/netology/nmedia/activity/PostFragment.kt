@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -78,7 +79,7 @@ class PostFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner) { posts ->
             val _post = posts.find { it.id == postId } ?: return@observe
-            with(binding.post) {
+                with(binding.post) {
                 likes.apply {
                     text = Counter.localizeCount(_post.likes)
                 }
