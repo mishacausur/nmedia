@@ -39,7 +39,6 @@ class PostRepositoryFilesImpl(private val context: Context) : PostRepository {
                 isLiked = !it.isLiked,
                 likes = if (!it.isLiked) it.likes + 1u else it.likes - 1u
             )
-
         }
     }
 
