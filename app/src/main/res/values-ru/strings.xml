@@ -7,4 +7,5 @@
     <string name="edit">Редактировать</string>
     <string name="delete">Удалить</string>
     <string name="description_post_save">Сохранить</string>
+    <string name="notification_user_liked">"Пользователь %1$s лайкнул пост r %2$s l "</string>
 </resources>
