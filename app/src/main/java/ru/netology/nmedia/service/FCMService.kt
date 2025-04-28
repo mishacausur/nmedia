@@ -1,7 +1,6 @@
 package ru.netology.nmedia.service
 
 import android.Manifest
-import androidx.appcompat.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.PackageManager
@@ -46,6 +45,7 @@ class FCMService : FirebaseMessagingService() {
                     Like::class.java
                 )
             )
+            Action.NEWPOST -> handleNewPost()
             Action.UNKNOWN -> println("Recieved unsupported push")
         }
     }
@@ -54,6 +54,7 @@ class FCMService : FirebaseMessagingService() {
         println(token)
     }
 
+    private fun handleNewPost() {}
     private fun handleLike(like: Like) {
 
         if (ActivityCompat.checkSelfPermission(
@@ -86,7 +87,7 @@ class FCMService : FirebaseMessagingService() {
 }
 
 enum class Action {
-    LIKE, UNKNOWN,
+    LIKE, NEWPOST, UNKNOWN,
 }
 
 data class Like(
