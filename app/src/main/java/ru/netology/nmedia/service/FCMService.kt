@@ -45,7 +45,12 @@ class FCMService : FirebaseMessagingService() {
                     Like::class.java
                 )
             )
-            Action.NEWPOST -> handleNewPost()
+            Action.NEWPOST -> handleNewPost(
+                Gson().fromJson(
+                    message.data["content"],
+                    PostNotification::class.java
+                )
+            )
             Action.UNKNOWN -> println("Recieved unsupported push")
         }
     }
@@ -54,7 +59,32 @@ class FCMService : FirebaseMessagingService() {
         println(token)
     }
 
-    private fun handleNewPost() {}
+    private fun handleNewPost(post: PostNotification) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(
+                    getString(
+                        R.string.notification_new_post,
+                        post.postAuthor
+                    )
+                )
+                .setStyle(NotificationCompat.BigTextStyle()
+                    .bigText(post.content))
+                .build()
+
+            NotificationManagerCompat
+                .from(this)
+                .notify(Random.nextInt(100_000), notification)
+
+            return
+        }
+    }
+
     private fun handleLike(like: Like) {
 
         if (ActivityCompat.checkSelfPermission(
@@ -90,6 +120,11 @@ enum class Action {
     LIKE, NEWPOST, UNKNOWN,
 }
 
+data class PostNotification(
+    val userId: Int,
+    val postAuthor: String,
+    val content: String
+)
 data class Like(
     val userId: Int,
     val userName: String,

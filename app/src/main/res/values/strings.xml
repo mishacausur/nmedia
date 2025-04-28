@@ -10,4 +10,5 @@
     <string name="channel_remote_name" translatable="false">Server notification</string>
     <string name="channel_remote_description" translatable="false">Notification from remote server</string>
     <string name="notification_user_liked">User %1$s liked %2$s\'s post</string>
+    <string name="notification_new_post">%1$s published new post:</string>
 </resources>
