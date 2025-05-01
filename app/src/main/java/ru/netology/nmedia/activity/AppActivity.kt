@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import android.Manifest
-import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 
@@ -34,15 +33,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                     textArg = text
                 }
             )
-        }
-
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val token = task.result
-                println("FCM Token: $token")
-            } else {
-                println("FCM Token fetch failed: ${task.exception}")
-            }
         }
     }
 
