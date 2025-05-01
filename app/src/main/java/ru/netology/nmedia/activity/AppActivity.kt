@@ -46,6 +46,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
             return
         }
+
         requestPermissions(arrayOf(permission), 1)
     }
 }
