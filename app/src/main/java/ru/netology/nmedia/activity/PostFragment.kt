@@ -62,7 +62,7 @@ class PostFragment : Fragment() {
             })
 
         val postId = requireArguments().longArgs
-        val post = viewModel.data.value?.find { it.id == postId }
+        val post = viewModel.data.value?.posts?.find { it.id == postId }
 
         post?.let { viewHolder.bind(it) }
 
@@ -77,8 +77,8 @@ class PostFragment : Fragment() {
             }
         }
 
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            val _post = posts.find { it.id == postId } ?: return@observe
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            val _post = state.posts.find { it.id == postId } ?: return@observe
                 with(binding.post) {
                 likes.apply {
                     text = Counter.localizeCount(_post.likes)
