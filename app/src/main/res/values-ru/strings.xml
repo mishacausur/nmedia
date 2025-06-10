@@ -9,4 +9,7 @@
     <string name="description_post_save">Сохранить</string>
     <string name="notification_user_liked">"Пользователь %1$s лайкнул пост r %2$s l "</string>
     <string name="notification_new_post">%1$s опубликовал новый пост:</string>
+    <string name="empty_posts">Данные не загружены</string>
+    <string name="error_loading">Случилась ошибка</string>
+    <string name="retry_loading">Попробовать снова</string>
 </resources>
