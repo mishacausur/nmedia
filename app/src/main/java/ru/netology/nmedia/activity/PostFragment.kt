@@ -81,7 +81,7 @@ class PostFragment : Fragment() {
             val _post = state.posts.find { it.id == postId } ?: return@observe
                 with(binding.post) {
                 likes.apply {
-                    text = Counter.localizeCount(_post.likes)
+                    text = Counter.localizeCount(_post.likes.toUInt())
                 }
                 share.apply {
                     text = Counter.localizeCount(_post.shares)

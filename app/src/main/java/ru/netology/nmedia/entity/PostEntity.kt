@@ -6,6 +6,7 @@ import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.utils.toURLOrNull
 import java.net.MalformedURLException
 import java.net.URL
+import com.google.gson.annotations.SerializedName
 
 @Entity
 data class PostEntity(
@@ -14,6 +15,7 @@ data class PostEntity(
     val author: String,
     val published: String,
     val content: String,
+    @SerializedName("likedByMe")
     val isLiked: Boolean,
     val shares: Long,
     val views: Long,
@@ -28,7 +30,7 @@ data class PostEntity(
         isLiked,
         shares.toUInt(),
         views.toUInt(),
-        likes.toUInt(),
+        likes.toInt(),
         video?.toURLOrNull()
     )
 
@@ -47,3 +49,26 @@ data class PostEntity(
     }
 }
 
+data class PostResponseDto(
+    val id: Long,
+    val author: String,
+    val published: String,
+    val content: String,
+    val isLiked: Boolean,
+    val shares: Long,
+    val views: Long,
+    val likes: Long,
+    val video: String?
+) {
+    fun toEntity() = PostEntity(
+        id = id,
+        author = author,
+        published = published,
+        content = content,
+        isLiked = isLiked,
+        shares = shares,
+        views = views,
+        likes = likes,
+        video = video
+    )
+}

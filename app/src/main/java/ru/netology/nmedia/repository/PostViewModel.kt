@@ -17,7 +17,7 @@ private val empty = Post(
     isLiked = false,
     shares = 0u,
     views = 0u,
-    likes = 0u,
+    likes = 0,
 )
 
 class PostViewModel(application: Application): AndroidViewModel(application) {
@@ -51,7 +51,28 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun like(postId: Long) {
-        thread { repository.like(postId) }
+        thread {
+            // 1. Оптимистично обновляем локальные данные
+            val oldPosts = _data.value?.posts.orEmpty()
+            val newPosts = oldPosts.map {
+                if (it.id == postId) {
+                    val liked = !it.isLiked
+                    it.copy(
+                        isLiked = liked,
+                        likes = if (liked) it.likes + 1 else maxOf(0, it.likes - 1)
+                    )
+                } else it
+            }
+            _data.postValue(_data.value?.copy(posts = newPosts))
+
+            try {
+                repository.like(postId)
+                val postsFromServer = repository.getAll()
+                _data.postValue(_data.value?.copy(posts = postsFromServer))
+            } catch (e: IOException) {
+                _data.postValue(_data.value?.copy(posts = oldPosts))
+            }
+        }
     }
     fun share(postId: Long) = repository.share(postId)
     fun remove(postId: Long) {

@@ -24,6 +24,7 @@ class FeedFragment : Fragment() {
     private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
     private val adapter = PostAdapter(object : OnActionListener {
         override fun onLike(post: Post) {
+            println("LIKE FOR")
             viewModel.like(post.id)
         }
 
@@ -102,6 +103,9 @@ class FeedFragment : Fragment() {
                     }
                 )
             }
+        }
+        viewModel.postCreated.observe(viewLifecycleOwner) {
+            viewModel.loadPosts()
         }
         return binding.root
     }

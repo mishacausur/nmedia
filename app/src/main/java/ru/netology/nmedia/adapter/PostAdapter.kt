@@ -52,7 +52,7 @@ class PostViewHolder(
         viewsCount.text = Counter.localizeCount(post.views)
         likes.apply {
             isChecked = post.isLiked
-            text = Counter.localizeCount(post.likes)
+            text = Counter.localizeCount(post.likes.toUInt())
         }
         likes.setOnClickListener {
             onActionListener.onLike(post)

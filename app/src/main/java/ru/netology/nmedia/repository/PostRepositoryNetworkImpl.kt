@@ -37,18 +37,28 @@ class PostRepositoryNetworkImpl: PostRepository  {
     }
 
     override fun like(postId: Long) {
-        val request: Request = Request.Builder()
-            .post("".toRequestBody())
-            .url("$BASE_URL/api/slow/posts/$postId/likes")
-            .build()
 
+        val allPosts = getAll()
+        val post = allPosts.find { it.id == postId } ?: throw RuntimeException("Post not found")
+
+        val requestBuilder = Request.Builder()
+            .url("$BASE_URL/api/slow/posts/$postId/likes")
+
+        val request = if (!post.isLiked) {
+            requestBuilder.post("".toRequestBody()).build()
+        } else {
+            requestBuilder.delete().build()
+        }
+        println("Sending ${if (!post.isLiked) "POST" else "DELETE"} for post $postId")
         client.newCall(request)
             .execute()
             .close()
     }
 
     override fun share(postId: Long) {
-        val request: Request = Request.Builder()
+
+        println("""
+            val request: Request = Request.Builder()
             .post("".toRequestBody())
             .url("$BASE_URL/api/slow/posts/$postId/shares")
             .build()
@@ -56,6 +66,8 @@ class PostRepositoryNetworkImpl: PostRepository  {
         client.newCall(request)
             .execute()
             .close()
+        """.trimIndent())
+
     }
 
     override fun remove(postId: Long) {
