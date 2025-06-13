@@ -1,5 +1,6 @@
 package ru.netology.nmedia.dto
 
+import com.google.gson.annotations.SerializedName
 import java.net.URL
 
 data class Post(
@@ -7,9 +8,10 @@ data class Post(
     val author: String,
     val published: String,
     var content: String,
+    @SerializedName("likedByMe")
     val isLiked: Boolean,
     val shares: UInt,
     val views: UInt,
-    val likes: UInt,
+    val likes: Int,
     val video: URL? = null
 )
