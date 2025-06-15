@@ -11,4 +11,7 @@
     <string name="channel_remote_description" translatable="false">Notification from remote server</string>
     <string name="notification_user_liked">User %1$s liked %2$s\'s post</string>
     <string name="notification_new_post">%1$s published new post:</string>
+    <string name="empty_posts">No data has been loaded</string>
+    <string name="error_loading">"Error event occurred "</string>
+    <string name="retry_loading">Try again</string>
 </resources>
