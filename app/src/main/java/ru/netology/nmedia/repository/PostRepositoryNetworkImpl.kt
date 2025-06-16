@@ -36,7 +36,7 @@ class PostRepositoryNetworkImpl: PostRepository  {
             }
     }
 
-    override fun getAllAsync(callback: PostRepository.GetAllCallback) {
+    override fun getAllAsync(callback: PostRepository.GetAllCallback<List<Post>>) {
         val request: Request = Request.Builder()
             .url("${BASE_URL}/api/slow/posts")
             .build()
@@ -58,7 +58,7 @@ class PostRepositoryNetworkImpl: PostRepository  {
             })
     }
 
-    override fun like(postId: Long) {
+    override fun like(postId: Long, callback: PostRepository.GetAllCallback<Post>) {
 
         val allPosts = getAll()
         val post = allPosts.find { it.id == postId } ?: throw RuntimeException("Post not found")
@@ -71,10 +71,26 @@ class PostRepositoryNetworkImpl: PostRepository  {
         } else {
             requestBuilder.delete().build()
         }
-        println("Sending ${if (!post.isLiked) "POST" else "DELETE"} for post $postId")
-        client.newCall(request)
-            .execute()
-            .close()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    callback.onError(IOException("Ошибка обновления поста: ${response.message}"))
+                    return
+                }
+
+                val responseBody = response.body?.string() ?: run {
+                    callback.onError(IOException("budy is null"))
+                    return
+                }
+
+                val postResponse = gson.fromJson(responseBody, Post::class.java)
+                callback.onSuccess(postResponse)
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+                callback.onError(e)
+            }
+        })
     }
 
     override fun share(postId: Long) {
@@ -92,7 +108,7 @@ class PostRepositoryNetworkImpl: PostRepository  {
 
     }
 
-    override fun remove(postId: Long) {
+    override fun remove(postId: Long, callback: PostRepository.GetAllCallback<Unit>) {
         val request: Request = Request.Builder()
             .delete()
             .url("${BASE_URL}/api/slow/posts/$postId")
@@ -103,14 +119,29 @@ class PostRepositoryNetworkImpl: PostRepository  {
             .close()
     }
 
-    override fun save(post: Post) {
-        val request: Request = Request.Builder()
+    override fun save(post: Post, callback: PostRepository.GetAllCallback<Post>) {
+        val request = Request.Builder()
             .post(gson.toJson(post).toRequestBody(jsonType))
-            .url("${BASE_URL}/api/slow/posts")
+            .url("$BASE_URL/api/slow/posts")
             .build()
 
-        client.newCall(request)
-            .execute()
-            .close()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val postsString =
+                        response.body?.string() ?: throw RuntimeException("body is null")
+
+                    val savedPost = gson.fromJson(postsString, Post::class.java)
+                    callback.onSuccess(savedPost)
+                } else {
+                    callback.onError(Exception("Ошибка при сохранении поста"))
+                }
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+                callback.onError(e)
+            }
+        })
     }
+
 }

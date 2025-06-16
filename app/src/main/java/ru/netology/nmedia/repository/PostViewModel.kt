@@ -51,55 +51,68 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun like(postId: Long) {
-        thread {
-            // 1. Оптимистично обновляем локальные данные
-            val oldPosts = _data.value?.posts.orEmpty()
-            val newPosts = oldPosts.map {
-                if (it.id == postId) {
-                    val liked = !it.isLiked
-                    it.copy(
-                        isLiked = liked,
-                        likes = if (liked) it.likes + 1 else maxOf(0, it.likes - 1)
-                    )
-                } else it
-            }
-            _data.postValue(_data.value?.copy(posts = newPosts))
 
-            try {
-                repository.like(postId)
-                val postsFromServer = repository.getAll()
-                _data.postValue(_data.value?.copy(posts = postsFromServer))
-            } catch (e: IOException) {
-                _data.postValue(_data.value?.copy(posts = oldPosts))
-            }
+        val post = _data.value?.posts?.find { it.id == postId } ?: return
+        val updatedPost = post.copy(
+            isLiked = !post.isLiked,
+            likes = if (post.isLiked) post.likes - 1 else post.likes + 1
+        )
+        _data.value?.posts?.map { if (it.id == postId) updatedPost else it }?.let {
+            _data.postValue(_data.value?.copy(posts = it))
         }
+
+        repository.like(postId, object : PostRepository.GetAllCallback<Post> {
+            override fun onSuccess(result: Post) {
+                _data.value?.posts?.let { posts ->
+                    val updatedPosts = posts.map {
+                        if (it.id == postId) {
+                            result.copy(published = it.published)
+                        } else it
+                    }
+                    _data.postValue(_data.value?.copy(posts = updatedPosts))
+                }
+            }
+
+            override fun onError(e: Exception) {
+                _data.value?.posts?.let { posts ->
+                    val updatedPosts = posts.map {
+                        if (it.id == postId) post else it
+                    }
+                    _data.postValue(_data.value?.copy(posts = updatedPosts))
+                }
+            }
+        })
     }
     fun share(postId: Long) = repository.share(postId)
     fun remove(postId: Long) {
-        thread {
-            // Оптимистичная модель
-            val old = _data.value?.posts.orEmpty()
-            _data.postValue(
-                _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                    .filter { it.id != postId }
-                )
-            )
-            try {
-                repository.remove(postId)
-            } catch (e: IOException) {
-                _data.postValue(_data.value?.copy(posts = old))
+        val oldPosts = _data.value?.posts.orEmpty()
+        _data.postValue(
+            _data.value?.copy(
+                posts = _data.value?.posts.orEmpty().filter { it.id != postId })
+        )
+        repository.remove(postId, object : PostRepository.GetAllCallback<Unit> {
+            override fun onSuccess(result: Unit) {
             }
-        }
+
+            override fun onError(e: Exception) {
+                _data.postValue(_data.value?.copy(posts = oldPosts))
+            }
+        })
     }
 
     fun save() {
         edited.value?.let {
-            thread {
-                repository.save(it)
-                _postCreated.postValue(Unit)
-            }
+            val updatedPost = it.copy(content = edited.value.toString())
+
+            repository.save(updatedPost, object : PostRepository.GetAllCallback<Post> {
+                override fun onSuccess(result: Post) {
+                    _postCreated.postValue(Unit)
+                }
+
+                override fun onError(e: Exception) {
+                }
+            })
         }
-        draft = null
         edited.value = empty
     }
 
