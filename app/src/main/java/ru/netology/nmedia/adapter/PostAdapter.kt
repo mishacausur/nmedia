@@ -71,8 +71,9 @@ class PostViewHolder(
         }
         views.setImageResource(R.drawable.ic_eye)
 
+        val avatarUrl = "http://10.0.2.2:9999/avatars/${post.authorAvatar}"
         Glide.with(binding.root)
-            .load(post.author.toURLOrNull())
+            .load(avatarUrl)
             .error(R.drawable.ic_error_24)
             .placeholder(R.drawable.ic_avatar_placeholder_24)
             .timeout(10_000)
