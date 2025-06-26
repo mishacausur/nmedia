@@ -7,10 +7,12 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.nmedia.Counter
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.utils.toURLOrNull
 
 interface OnActionListener {
     fun onLike(post: Post)
@@ -68,6 +70,16 @@ class PostViewHolder(
             onActionListener.onPlay(post)
         }
         views.setImageResource(R.drawable.ic_eye)
+
+        val avatarUrl = "http://10.0.2.2:9999/avatars/${post.authorAvatar}"
+        Glide.with(binding.root)
+            .load(avatarUrl)
+            .error(R.drawable.ic_error_24)
+            .placeholder(R.drawable.ic_avatar_placeholder_24)
+            .timeout(10_000)
+            .circleCrop()
+            .into(avatar)
+
         menu.setOnClickListener {
             PopupMenu(it.context, it).apply {
                 inflate(R.menu.post_actions)

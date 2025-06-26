@@ -13,6 +13,7 @@ data class PostEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
     val author: String,
+    val authorAvatar: String,
     val published: String,
     val content: String,
     @SerializedName("likedByMe")
@@ -25,6 +26,7 @@ data class PostEntity(
     fun toDTO() = Post(
         id,
         author,
+        authorAvatar,
         published,
         content,
         isLiked,
@@ -38,6 +40,7 @@ data class PostEntity(
         fun fromDTO(post: Post) = PostEntity(
             post.id,
             post.author,
+            post.authorAvatar,
             post.published,
             post.content,
             post.isLiked,
@@ -52,6 +55,7 @@ data class PostEntity(
 data class PostResponseDto(
     val id: Long,
     val author: String,
+    val authorAvatar: String,
     val published: String,
     val content: String,
     val isLiked: Boolean,
@@ -63,6 +67,7 @@ data class PostResponseDto(
     fun toEntity() = PostEntity(
         id = id,
         author = author,
+        authorAvatar = authorAvatar,
         published = published,
         content = content,
         isLiked = isLiked,

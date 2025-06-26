@@ -44,6 +44,8 @@ dependencies {
     def firebase_messaging_version = "24.1.1"
     def play_services_version = "18.7.0"
     def okhttp_version = "4.12.0"
+    def glide_version = "4.16.0"
+
     implementation libs.androidx.navigation.fragment.ktx
     implementation libs.androidx.navigation.ui.ktx
     implementation libs.androidx.lifecycle.viewmodel.ktx
@@ -66,4 +68,5 @@ dependencies {
     implementation platform("com.google.firebase:firebase-bom:$firebase_bom_version")
     implementation "com.google.firebase:firebase-messaging-ktx:$firebase_messaging_version"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation "com.github.bumptech.glide:glide:$glide_version"
 }
