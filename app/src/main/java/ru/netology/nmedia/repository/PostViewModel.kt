@@ -9,6 +9,8 @@ import ru.netology.nmedia.utils.SingleLiveEvent
 import java.io.IOException
 import kotlin.concurrent.thread
 
+class HttpException(val code: Int) : Throwable("HTTP error with code $code")
+
 private val empty = Post(
     id = 0,
     author = "",
@@ -31,22 +33,35 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
+    private val _errorMessage = MutableLiveData<String?>()
+    val errorMessage: LiveData<String?> = _errorMessage
+
     init {
         loadPosts()
     }
 
+    fun retryLoad() {
+        loadPosts()
+    }
+
+    fun clearError() {
+        _errorMessage.postValue(null)
+    }
+
     fun loadPosts() {
         thread {
-            // Начинаем загрузку
             _data.postValue(FeedModel(loading = true))
-            try {
-                // Данные успешно получены
-                val posts = repository.getAll()
-                FeedModel(posts = posts, empty = posts.isEmpty())
+            val model = try {
+                val response = repository.getAll()
+                FeedModel(posts = response, empty = response.isEmpty())
             } catch (e: IOException) {
-                // Получена ошибка
+                _errorMessage.postValue("Ошибка загрузки: ${e.message}")
                 FeedModel(error = true)
-            }.also(_data::postValue)
+            } catch (e: HttpException) {
+                _errorMessage.postValue("Ошибка загрузки: ${e.message}")
+                FeedModel(error = true)
+            }
+            _data.postValue(model)
         }
     }
 
@@ -63,6 +78,7 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
 
         repository.like(postId, object : PostRepository.GetAllCallback<Post> {
             override fun onSuccess(result: Post) {
+
                 _data.value?.posts?.let { posts ->
                     val updatedPosts = posts.map {
                         if (it.id == postId) {
@@ -73,7 +89,8 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
                 }
             }
 
-            override fun onError(e: Exception) {
+            override fun onError(e: Throwable) {
+                _errorMessage.postValue("Ошибка при лайке: ${e.message}")
                 _data.value?.posts?.let { posts ->
                     val updatedPosts = posts.map {
                         if (it.id == postId) post else it
@@ -91,11 +108,12 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
                 posts = _data.value?.posts.orEmpty().filter { it.id != postId })
         )
         repository.remove(postId, object : PostRepository.GetAllCallback<Unit> {
-            override fun onSuccess(result: Unit) {
-            }
+            override fun onSuccess(result: Unit) {}
 
-            override fun onError(e: Exception) {
+            override fun onError(e: Throwable) {
+                _errorMessage.postValue("Ошибка при удалении: ${e.message}")
                 _data.postValue(_data.value?.copy(posts = oldPosts))
+                _data.postValue(FeedModel(error = true))
             }
         })
     }
@@ -109,7 +127,9 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
                     _postCreated.postValue(Unit)
                 }
 
-                override fun onError(e: Exception) {
+                override fun onError(e: Throwable) {
+                    _errorMessage.postValue("Ошибка при сохранении: ${e.message}")
+                    _data.value = FeedModel(error = true)
                 }
             })
         }
