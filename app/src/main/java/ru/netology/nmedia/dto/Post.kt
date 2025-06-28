@@ -6,6 +6,7 @@ import java.net.URL
 data class Post(
     val id: Long,
     val author: String,
+    val authorAvatar: String?,
     val published: String,
     var content: String,
     @SerializedName("likedByMe")

@@ -8,11 +8,6 @@ import ru.netology.nmedia.dto.Post
 
 class PostRepositoryNetworkImpl : PostRepository {
 
-    override fun getAll(): List<Post> {
-        return ApiService.service.getAll().execute()
-            .let { it.body() ?: throw RuntimeException("body is null") }
-    }
-
     override fun getAllAsync(callback: PostRepository.GetAllCallback<List<Post>>) {
 
         return ApiService.service.getAll().enqueue(object : Callback<List<Post>> {
@@ -38,23 +33,14 @@ class PostRepositoryNetworkImpl : PostRepository {
             })
     }
 
-    override fun like(postId: Long, callback: PostRepository.GetAllCallback<Post>) {
-        val allPosts = getAll()
-        val post = allPosts.find { it.id == postId } ?: throw RuntimeException("Post not found")
-
-        val call = if (!post.isLiked) {
+    override fun like(postId: Long, isLiked: Boolean, callback: PostRepository.GetAllCallback<Post>) {
+        val call = if (!isLiked) {
             ApiService.service.like(postId)
         } else {
             ApiService.service.unlike(postId)
         }
-
         call.enqueue(object : Callback<Post> {
             override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (!response.isSuccessful) {
-                    callback.onError(HttpException(response.code()))
-                    println("Ошибка при лайке: HTTP error ${response.code()}")
-                    return
-                }
                 val body = response.body() ?: run {
                     callback.onError(RuntimeException("body is null"))
                     println("Ошибка при лайке: body is null")

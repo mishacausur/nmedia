@@ -108,8 +108,9 @@ class FeedFragment : Fragment() {
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
             message?.let {
-                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
-                viewModel.clearError()
+                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
+                    .setAnchorView(binding.addButton)
+                    .show()
             }
         }
 

@@ -13,7 +13,8 @@ class HttpException(val code: Int) : Throwable("HTTP error with code $code")
 
 private val empty = Post(
     id = 0,
-    author = "",
+    author = "Me",
+    authorAvatar = "",
     content = "",
     published = "",
     isLiked = false,
@@ -33,8 +34,8 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
-    private val _errorMessage = MutableLiveData<String?>()
-    val errorMessage: LiveData<String?> = _errorMessage
+    private val _errorMessage = SingleLiveEvent<String>()
+    val errorMessage: LiveData<String> = _errorMessage
 
     init {
         loadPosts()
@@ -44,25 +45,20 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
         loadPosts()
     }
 
-    fun clearError() {
-        _errorMessage.postValue(null)
-    }
 
     fun loadPosts() {
-        thread {
-            _data.postValue(FeedModel(loading = true))
-            val model = try {
-                val response = repository.getAll()
-                FeedModel(posts = response, empty = response.isEmpty())
-            } catch (e: IOException) {
-                _errorMessage.postValue("Ошибка загрузки: ${e.message}")
-                FeedModel(error = true)
-            } catch (e: HttpException) {
-                _errorMessage.postValue("Ошибка загрузки: ${e.message}")
-                FeedModel(error = true)
+        _data.postValue(FeedModel(loading = true))
+
+        repository.getAllAsync(object : PostRepository.GetAllCallback<List<Post>> {
+            override fun onSuccess(result: List<Post>) {
+                _data.postValue(FeedModel(posts = result, empty = result.isEmpty()))
             }
-            _data.postValue(model)
-        }
+
+            override fun onError(e: Throwable) {
+                _errorMessage.postValue("Ошибка загрузки: ${e.message}")
+                _data.postValue(FeedModel(error = true))
+            }
+        })
     }
 
     fun like(postId: Long) {
@@ -70,13 +66,19 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
         val post = _data.value?.posts?.find { it.id == postId } ?: return
         val updatedPost = post.copy(
             isLiked = !post.isLiked,
-            likes = if (post.isLiked) post.likes - 1 else post.likes + 1
+            likes = if (post.isLiked) post.likes - 1 else post.likes + 1,
+            author = post.author,
+            authorAvatar = post.authorAvatar,
+            published = post.published,
+            content = post.content,
+            shares = post.shares,
+            views = post.views
         )
         _data.value?.posts?.map { if (it.id == postId) updatedPost else it }?.let {
             _data.postValue(_data.value?.copy(posts = it))
         }
 
-        repository.like(postId, object : PostRepository.GetAllCallback<Post> {
+        repository.like(postId, post.isLiked, object : PostRepository.GetAllCallback<Post> {
             override fun onSuccess(result: Post) {
 
                 _data.value?.posts?.let { posts ->
@@ -92,8 +94,18 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
             override fun onError(e: Throwable) {
                 _errorMessage.postValue("Ошибка при лайке: ${e.message}")
                 _data.value?.posts?.let { posts ->
+                    val originalPost = post.copy(
+                        isLiked = post.isLiked,
+                        likes = post.likes,
+                        author = post.author,
+                        authorAvatar = post.authorAvatar,
+                        published = post.published,
+                        content = post.content,
+                        shares = post.shares,
+                        views = post.views
+                    )
                     val updatedPosts = posts.map {
-                        if (it.id == postId) post else it
+                        if (it.id == postId) originalPost else it
                     }
                     _data.postValue(_data.value?.copy(posts = updatedPosts))
                 }
@@ -120,7 +132,7 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
 
     fun save() {
         edited.value?.let {
-            val updatedPost = it.copy(content = edited.value.toString())
+            val updatedPost = it
 
             repository.save(updatedPost, object : PostRepository.GetAllCallback<Post> {
                 override fun onSuccess(result: Post) {
