@@ -80,6 +80,7 @@ class PostViewHolder(
             .circleCrop()
             .into(avatar)
 
+
         menu.setOnClickListener {
             PopupMenu(it.context, it).apply {
                 inflate(R.menu.post_actions)

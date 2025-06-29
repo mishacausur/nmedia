@@ -13,7 +13,7 @@ data class PostEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
     val author: String,
-    val authorAvatar: String,
+    val authorAvatar: String?,
     val published: String,
     val content: String,
     @SerializedName("likedByMe")
@@ -55,7 +55,7 @@ data class PostEntity(
 data class PostResponseDto(
     val id: Long,
     val author: String,
-    val authorAvatar: String,
+    val authorAvatar: String?,
     val published: String,
     val content: String,
     val isLiked: Boolean,
