@@ -77,3 +77,6 @@ data class PostResponseDto(
         video = video
     )
 }
+
+fun List<PostEntity>.toDTO() = map(PostEntity::toDTO)
+fun List<Post>.fromDto() = map(PostEntity.Companion::fromDTO)

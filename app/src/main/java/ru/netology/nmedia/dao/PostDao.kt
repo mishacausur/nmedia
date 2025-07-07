@@ -14,10 +14,10 @@ interface PostDao {
     fun getAll(): LiveData<List<PostEntity>>
 
     @Insert
-    fun insert(post: PostEntity)
+    suspend fun insert(post: PostEntity)
 
     @Query("UPDATE PostEntity SET content=:text WHERE id=:postId")
-    fun updatePost(postId: Long, text: String)
+    suspend fun updatePost(postId: Long, text: String)
 
     @Query(
         """
@@ -27,7 +27,7 @@ interface PostDao {
            WHERE id =:postId;
         """
     )
-    fun like(postId: Long)
+    suspend fun like(postId: Long)
 
     @Query(
         """
@@ -36,10 +36,10 @@ interface PostDao {
            WHERE id =:postId;
         """
     )
-    fun share(postId: Long)
+    suspend fun share(postId: Long)
 
     @Query("DELETE FROM PostEntity WHERE id=:postId")
-    fun remove(postId: Long)
+    suspend fun remove(postId: Long)
 
-    fun save(post: PostEntity) = if (post.id == 0L) insert(post) else updatePost(post.id, post.content)
+    suspend fun save(post: PostEntity) = if (post.id == 0L) insert(post) else updatePost(post.id, post.content)
 }
