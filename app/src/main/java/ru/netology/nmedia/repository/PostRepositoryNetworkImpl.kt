@@ -4,6 +4,7 @@ import androidx.lifecycle.map
 import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.fromDto
 import ru.netology.nmedia.entity.toDTO
 
@@ -14,42 +15,67 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
     }
 
     override suspend fun like(postId: Long, isLiked: Boolean): Post {
-        return if (!isLiked) {
-            ApiService.service.like(postId)
-        } else {
-            ApiService.service.unlike(postId)
+        try {
+            val response = if (!isLiked) {
+                ApiService.service.like(postId)
+            } else {
+                ApiService.service.unlike(postId)
+            }
+            dao.like(postId)
+            return response
+        } catch (e: Exception) {
+            throw e
         }
     }
 
     override suspend fun share(postId: Long) {
-        println(
-            """
-            val request: Request = Request.Builder()
-            .post("".toRequestBody())
-            .url("BASE_URL/api/slow/posts/$postId/shares")
-            .build()
+        try {
+            println(
+                """
+                val request: Request = Request.Builder()
+                .post("".toRequestBody())
+                .url("BASE_URL/api/slow/posts/$postId/shares")
+                .build()
 
-        client.newCall(request)
-            .execute()
-            .close()
-        """.trimIndent()
-        )
+            client.newCall(request)
+                .execute()
+                .close()
+            """.trimIndent()
+            )
+            dao.share(postId)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun remove(id: Long) {
-        ApiService.service.remove(id)
+        try {
+            ApiService.service.remove(id)
+            dao.remove(id)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun save(post: Post): Post {
-        return ApiService.service.save(post)
+        try {
+            val response = ApiService.service.save(post)
+            dao.insert(PostEntity.fromDTO(response))
+            return response
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     override suspend fun getAllAsync() {
-        val posts = ApiService.service.getAll()
-        posts.fromDto().forEach {
-            dao.insert(it)
+        try {
+            val posts = ApiService.service.getAll()
+            posts.fromDto().forEach {
+                dao.insert(it)
+            }
+        } catch (e: Exception) {
+            throw e
         }
-
     }
 
 }

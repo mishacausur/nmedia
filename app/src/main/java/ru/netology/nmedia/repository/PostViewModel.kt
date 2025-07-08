@@ -87,7 +87,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         viewModelScope.launch {
-            repository.like(postId, post.isLiked)
+            try {
+                repository.like(postId, post.isLiked)
+            } catch (e: Exception) {
+                _data.value?.posts?.map { if (it.id == postId) post else it }?.let {
+                    _data.postValue(_data.value?.copy(posts = it))
+                }
+                _errorMessage.postValue("Error occured: ${e.message}")
+            }
         }
 
     }
@@ -102,20 +109,29 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         val oldPosts = _data.value?.posts.orEmpty()
         _data.postValue(
             _data.value?.copy(
-                posts = _data.value?.posts.orEmpty().filter { it.id != postId })
+                posts = oldPosts.filter { it.id != postId })
         )
         viewModelScope.launch {
-            repository.remove(postId)
+            try {
+                repository.remove(postId)
+            } catch (e: Exception) {
+                _data.postValue(_data.value?.copy(posts = oldPosts))
+                _errorMessage.postValue("Error щссгкув: ${e.message}")
+            }
         }
     }
 
     fun save() {
         viewModelScope.launch {
-            edited.value?.let {
-                val updatedPost = it
-                repository.save(updatedPost)
+            try {
+                edited.value?.let {
+                    val updatedPost = it
+                    repository.save(updatedPost)
+                }
+                edited.value = empty
+            } catch (e: Exception) {
+                _errorMessage.postValue("Error occured: ${e.message}")
             }
-            edited.value = empty
         }
     }
 

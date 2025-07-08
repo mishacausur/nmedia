@@ -20,7 +20,7 @@ class NewPostFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
             viewModel.tempSave(binding.edit.text.toString())
             findNavController().navigateUp()
         }
@@ -49,6 +49,7 @@ class NewPostFragment : Fragment() {
             viewModel.save()
             findNavController().navigateUp()
         }
+
         return binding.root
     }
 
