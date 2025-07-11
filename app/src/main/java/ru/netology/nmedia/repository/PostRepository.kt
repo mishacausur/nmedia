@@ -10,4 +10,8 @@ interface PostRepository {
     suspend fun remove(id: Long)
     suspend fun save(post: Post): Post
     suspend fun getAllAsync()
+    suspend fun  likeLocally(postId: Long)
+    suspend fun likeRemotely(postId: Long)
+    suspend fun undoLike(postId: Long)
+    suspend fun removeLocally(postId: Long)
 }

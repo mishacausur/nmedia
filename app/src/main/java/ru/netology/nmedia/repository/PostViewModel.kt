@@ -29,7 +29,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         dao = AppDb.getInstance(application).postDao
     )
     private var draft: String? = null
-    private val _data = MutableLiveData(FeedModel())
     val data: LiveData<FeedModel> = repository.data.map {
         FeedModel(
             posts = it,
@@ -70,33 +69,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun like(postId: Long) {
-
-        val post = _data.value?.posts?.find { it.id == postId } ?: return
-        val updatedPost = post.copy(
-            isLiked = !post.isLiked,
-            likes = if (post.isLiked) post.likes - 1 else post.likes + 1,
-            author = post.author,
-            authorAvatar = post.authorAvatar,
-            published = post.published,
-            content = post.content,
-            shares = post.shares,
-            views = post.views
-        )
-        _data.value?.posts?.map { if (it.id == postId) updatedPost else it }?.let {
-            _data.postValue(_data.value?.copy(posts = it))
-        }
-
         viewModelScope.launch {
             try {
-                repository.like(postId, post.isLiked)
+                repository.likeLocally(postId)
+                repository.likeRemotely(postId)
             } catch (e: Exception) {
-                _data.value?.posts?.map { if (it.id == postId) post else it }?.let {
-                    _data.postValue(_data.value?.copy(posts = it))
-                }
+                repository.undoLike(postId)
                 _errorMessage.postValue("Error occured: ${e.message}")
             }
         }
-
     }
 
     fun share(postId: Long) {
@@ -106,17 +87,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun remove(postId: Long) {
-        val oldPosts = _data.value?.posts.orEmpty()
-        _data.postValue(
-            _data.value?.copy(
-                posts = oldPosts.filter { it.id != postId })
-        )
         viewModelScope.launch {
             try {
+                repository.removeLocally(postId)
                 repository.remove(postId)
             } catch (e: Exception) {
-                _data.postValue(_data.value?.copy(posts = oldPosts))
-                _errorMessage.postValue("Error щссгкув: ${e.message}")
+                _errorMessage.postValue("Error occurred: ${e.message}")
             }
         }
     }
