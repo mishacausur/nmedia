@@ -1,10 +1,11 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.dto.Post
 
 interface PostRepository {
-    val data: LiveData<List<Post>>
+    val data: Flow<List<Post>>
+    fun newerCount(id: Long): Flow<Int>
     suspend fun like(postId: Long)
     suspend fun share(postId: Long)
     suspend fun remove(id: Long)

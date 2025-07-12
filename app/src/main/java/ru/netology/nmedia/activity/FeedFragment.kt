@@ -121,6 +121,11 @@ class FeedFragment : Fragment() {
         viewModel.postCreated.observe(viewLifecycleOwner) {
             viewModel.loadPosts()
         }
+
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            println(it)
+        }
+
         return binding.root
     }
 
