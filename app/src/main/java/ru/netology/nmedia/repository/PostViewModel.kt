@@ -2,6 +2,8 @@ package ru.netology.nmedia.repository
 
 import android.app.Application
 import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
@@ -9,6 +11,7 @@ import ru.netology.nmedia.entity.FeedModel
 import ru.netology.nmedia.entity.FeedModelState
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.utils.SingleLiveEvent
+import kotlinx.coroutines.flow.map
 
 class HttpException(val code: Int) : Throwable("HTTP error with code $code")
 
@@ -34,6 +37,22 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             posts = it,
             empty = it.isEmpty(),
         )
+    }
+        .catch {
+            it.printStackTrace()
+        }
+        .asLiveData(Dispatchers.Default)
+
+    val newerCount = data.switchMap {
+        repository
+            .newerCount(it.posts.firstOrNull()?.id ?: 0L)
+            .catch {
+                _state.postValue(
+                    FeedModelState(error = true)
+                )
+                _errorMessage.postValue("Error while updating occured")
+            }
+            .asLiveData(Dispatchers.Default)
     }
     private val _state = MutableLiveData(FeedModelState())
     val state: LiveData<FeedModelState>
