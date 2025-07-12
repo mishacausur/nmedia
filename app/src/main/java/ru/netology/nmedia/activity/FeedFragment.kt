@@ -77,15 +77,19 @@ class FeedFragment : Fragment() {
             viewModel.loadPosts()
         }
 
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            val isNewPost = adapter.currentList.size < state.posts.size
-            adapter.submitList(state.posts) {
-                binding.progress.isVisible = state.loading
-                binding.errorGroup.isVisible = state.error
-                binding.emptyText.isVisible = state.empty
+        viewModel.data.observe(viewLifecycleOwner) { data ->
+            val isNewPost = adapter.currentList.size < data.posts.size
+            adapter.submitList(data.posts) {
+
+                binding.emptyText.isVisible = data.empty
                 if (isNewPost) {
                     binding.list.scrollToPosition(0)
                 }
+            }
+
+            viewModel.state.observe(viewLifecycleOwner) { state ->
+                binding.progress.isVisible = state.loading
+                binding.errorGroup.isVisible = state.error
             }
             binding.swipeRefresh.isRefreshing = false
         }
