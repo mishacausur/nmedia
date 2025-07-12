@@ -14,17 +14,17 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
         it.toDTO()
     }
 
-    override suspend fun like(postId: Long, isLiked: Boolean): Post {
+    override suspend fun like(postId: Long) {
+        val isLiked = dao.getById(postId)?.isLiked ?: return
         dao.like(postId)
         try {
-            val response = if (!isLiked) {
+            if (!isLiked) {
                 ApiService.service.like(postId)
             } else {
                 ApiService.service.unlike(postId)
             }
-            dao.like(postId)
-            return response
         } catch (e: Exception) {
+            dao.like(postId)
             throw e
         }
     }
@@ -80,24 +80,6 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
             }
         } catch (e: Exception) {
             throw e
-        }
-    }
-
-    override suspend fun likeLocally(postId: Long) {
-        val post = dao.getById(postId) ?: return
-        val liked = !post.isLiked
-        dao.insert(post.copy(
-            isLiked = liked,
-            likes = if (liked) post.likes + 1 else post.likes - 1
-        ))
-    }
-
-    override suspend fun likeRemotely(postId: Long) {
-        val post = dao.getById(postId) ?: return
-        if (post.isLiked) {
-            ApiService.service.like(postId)
-        } else {
-            ApiService.service.unlike(postId)
         }
     }
 

@@ -71,10 +71,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun like(postId: Long) {
         viewModelScope.launch {
             try {
-                repository.likeLocally(postId)
-                repository.likeRemotely(postId)
+                repository.like(postId)
             } catch (e: Exception) {
-                repository.undoLike(postId)
                 _errorMessage.postValue("Error occured: ${e.message}")
             }
         }
