@@ -8,11 +8,12 @@ data class Post(
     val author: String,
     val authorAvatar: String?,
     val published: String,
-    var content: String,
+    val content: String,
     @SerializedName("likedByMe")
-    val isLiked: Boolean,
-    val shares: UInt,
-    val views: UInt,
-    val likes: Int,
-    val video: URL? = null
+    val isLiked: Boolean = false,
+    val shares: UInt = 0u,
+    val views: UInt = 0u,
+    val likes: Int = 0,
+    val video: URL? = null,
+    val visible: Boolean = true
 )

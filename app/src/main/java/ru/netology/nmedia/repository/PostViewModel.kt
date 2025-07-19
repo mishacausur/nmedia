@@ -32,6 +32,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         dao = AppDb.getInstance(application).postDao
     )
     private var draft: String? = null
+    private val _pendingPosts = MutableLiveData<List<Post>>(emptyList())
+    val pendingPosts: LiveData<List<Post>> get() = _pendingPosts
+    private val _hasPendingPosts = MutableLiveData(false)
+    val hasPendingPosts: LiveData<Boolean> get() = _hasPendingPosts
+
+    private var currentPosts: List<Post> = emptyList()
+
     val data: LiveData<FeedModel> = repository.data.map {
         FeedModel(
             posts = it,
@@ -64,7 +71,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _errorMessage = SingleLiveEvent<String>()
     val errorMessage: LiveData<String> = _errorMessage
-
     init {
         loadPosts()
     }
@@ -148,5 +154,30 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun cancel() {
         edited.value = empty
+    }
+
+    fun onPostsLoaded(newPosts: List<Post>) {
+        if (currentPosts.isNotEmpty() && newPosts.isNotEmpty() && currentPosts[0].id != newPosts[0].id) {
+            // Есть новые посты
+            _pendingPosts.value = newPosts
+            _hasPendingPosts.value = true
+        } else {
+            // Нет новых постов
+            currentPosts = newPosts
+            _pendingPosts.value = newPosts
+            _hasPendingPosts.value = false
+        }
+    }
+
+    fun showPendingPosts() {
+        // Показываем новые посты пользователю
+        viewModelScope.launch {
+            repository.setAllVisible()
+        }
+        currentPosts = _pendingPosts.value ?: emptyList()
+        _hasPendingPosts.value = false
+        // Триггерим обновление pendingPosts, чтобы observer сработал
+        _pendingPosts.value = currentPosts
+        println("showPendingPosts: currentPosts.size = ${currentPosts.size}")
     }
 }

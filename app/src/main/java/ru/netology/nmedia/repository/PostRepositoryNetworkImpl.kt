@@ -30,7 +30,7 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
             }
             val body = reponse.body() ?: throw  HttpException(reponse.code())
             body.fromDto().forEach {
-                dao.insert(it)
+                dao.insert(it.copy(visible = true))
             }
             emit(body.size)
         }
@@ -38,6 +38,11 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
         throw it
     }
 
+    override suspend fun setAllVisible() {
+        dao.setAllVisible()
+    }
+
+    override fun getNewerLocalCount(): Flow<Int> = dao.getNewerCount()
 
 
     override suspend fun like(postId: Long) {
@@ -102,7 +107,7 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
         try {
             val posts = ApiService.service.getAll()
             posts.fromDto().forEach {
-                dao.insert(it)
+                dao.insert(it.copy(visible = true))
             }
         } catch (e: Exception) {
             throw e

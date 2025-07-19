@@ -68,6 +68,16 @@ class FeedFragment : Fragment() {
         )
 
         binding.list.adapter = adapter
+        val newPostsButton = binding.newPostsButton
+        newPostsButton.setOnClickListener {
+            println("Кнопка новых постов нажата")
+            viewModel.showPendingPosts()
+            viewModel.pendingPosts.value?.let { posts ->
+                adapter.submitList(posts) {
+                    binding.list.scrollToPosition(0)
+                }
+            }
+        }
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.loadPosts()
@@ -77,16 +87,20 @@ class FeedFragment : Fragment() {
             viewModel.loadPosts()
         }
 
-        viewModel.data.observe(viewLifecycleOwner) { data ->
-            val isNewPost = adapter.currentList.size < data.posts.size
-            adapter.submitList(data.posts) {
-
-                binding.emptyText.isVisible = data.empty
-                if (isNewPost) {
-                    binding.list.scrollToPosition(0)
+        viewModel.pendingPosts.observe(viewLifecycleOwner) { posts ->
+            if (viewModel.hasPendingPosts.value != true) {
+                adapter.submitList(posts) {
+                    binding.emptyText.isVisible = posts.isEmpty()
                 }
             }
+        }
+        viewModel.hasPendingPosts.observe(viewLifecycleOwner) { hasPending ->
+            println("hasPendingPosts = $hasPending")
+            newPostsButton.isVisible = hasPending
+        }
 
+        viewModel.data.observe(viewLifecycleOwner) { data ->
+            viewModel.onPostsLoaded(data.posts)
             viewModel.state.observe(viewLifecycleOwner) { state ->
                 binding.progress.isVisible = state.loading
                 binding.errorGroup.isVisible = state.error

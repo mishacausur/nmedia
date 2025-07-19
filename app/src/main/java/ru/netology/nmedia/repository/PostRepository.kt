@@ -13,4 +13,6 @@ interface PostRepository {
     suspend fun getAllAsync()
     suspend fun undoLike(postId: Long)
     suspend fun removeLocally(postId: Long)
+    suspend fun setAllVisible()
+    fun getNewerLocalCount(): Flow<Int>
 }
