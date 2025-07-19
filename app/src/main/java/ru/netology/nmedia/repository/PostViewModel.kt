@@ -158,11 +158,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onPostsLoaded(newPosts: List<Post>) {
         if (currentPosts.isNotEmpty() && newPosts.isNotEmpty() && currentPosts[0].id != newPosts[0].id) {
-            // Есть новые посты
             _pendingPosts.value = newPosts
             _hasPendingPosts.value = true
         } else {
-            // Нет новых постов
             currentPosts = newPosts
             _pendingPosts.value = newPosts
             _hasPendingPosts.value = false
@@ -170,13 +168,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun showPendingPosts() {
-        // Показываем новые посты пользователю
         viewModelScope.launch {
             repository.setAllVisible()
         }
         currentPosts = _pendingPosts.value ?: emptyList()
         _hasPendingPosts.value = false
-        // Триггерим обновление pendingPosts, чтобы observer сработал
         _pendingPosts.value = currentPosts
         println("showPendingPosts: currentPosts.size = ${currentPosts.size}")
     }
