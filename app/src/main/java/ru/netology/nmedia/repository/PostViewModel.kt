@@ -2,6 +2,8 @@ package ru.netology.nmedia.repository
 
 import android.app.Application
 import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
@@ -9,6 +11,7 @@ import ru.netology.nmedia.entity.FeedModel
 import ru.netology.nmedia.entity.FeedModelState
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.utils.SingleLiveEvent
+import kotlinx.coroutines.flow.map
 
 class HttpException(val code: Int) : Throwable("HTTP error with code $code")
 
@@ -29,11 +32,34 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         dao = AppDb.getInstance(application).postDao
     )
     private var draft: String? = null
+    private val _pendingPosts = MutableLiveData<List<Post>>(emptyList())
+    val pendingPosts: LiveData<List<Post>> get() = _pendingPosts
+    private val _hasPendingPosts = MutableLiveData(false)
+    val hasPendingPosts: LiveData<Boolean> get() = _hasPendingPosts
+
+    private var currentPosts: List<Post> = emptyList()
+
     val data: LiveData<FeedModel> = repository.data.map {
         FeedModel(
             posts = it,
             empty = it.isEmpty(),
         )
+    }
+        .catch {
+            it.printStackTrace()
+        }
+        .asLiveData(Dispatchers.Default)
+
+    val newerCount = data.switchMap {
+        repository
+            .newerCount(it.posts.firstOrNull()?.id ?: 0L)
+            .catch {
+                _state.postValue(
+                    FeedModelState(error = true)
+                )
+                _errorMessage.postValue("Error while updating occured")
+            }
+            .asLiveData(Dispatchers.Default)
     }
     private val _state = MutableLiveData(FeedModelState())
     val state: LiveData<FeedModelState>
@@ -45,7 +71,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _errorMessage = SingleLiveEvent<String>()
     val errorMessage: LiveData<String> = _errorMessage
-
     init {
         loadPosts()
     }
@@ -129,5 +154,26 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun cancel() {
         edited.value = empty
+    }
+
+    fun onPostsLoaded(newPosts: List<Post>) {
+        if (currentPosts.isNotEmpty() && newPosts.isNotEmpty() && currentPosts[0].id != newPosts[0].id) {
+            _pendingPosts.value = newPosts
+            _hasPendingPosts.value = true
+        } else {
+            currentPosts = newPosts
+            _pendingPosts.value = newPosts
+            _hasPendingPosts.value = false
+        }
+    }
+
+    fun showPendingPosts() {
+        viewModelScope.launch {
+            repository.setAllVisible()
+        }
+        currentPosts = _pendingPosts.value ?: emptyList()
+        _hasPendingPosts.value = false
+        _pendingPosts.value = currentPosts
+        println("showPendingPosts: currentPosts.size = ${currentPosts.size}")
     }
 }

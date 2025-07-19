@@ -21,7 +21,8 @@ data class PostEntity(
     val shares: Long,
     val views: Long,
     val likes: Long,
-    val video: String?
+    val video: String?,
+    val visible: Boolean = true
 ) {
     fun toDTO() = Post(
         id,
@@ -33,11 +34,12 @@ data class PostEntity(
         shares.toUInt(),
         views.toUInt(),
         likes.toInt(),
-        video?.toURLOrNull()
+        video?.toURLOrNull(),
+        visible
     )
 
     companion object {
-        fun fromDTO(post: Post) = PostEntity(
+        fun fromDTO(post: Post, visible: Boolean = true) = PostEntity(
             post.id,
             post.author,
             post.authorAvatar,
@@ -47,7 +49,8 @@ data class PostEntity(
             post.shares.toLong(),
             post.views.toLong(),
             post.likes.toLong(),
-            post.video.toString()
+            post.video.toString(),
+            visible = visible
         )
     }
 }
@@ -62,9 +65,10 @@ data class PostResponseDto(
     val shares: Long,
     val views: Long,
     val likes: Long,
-    val video: String?
+    val video: String?,
+    val visible: Boolean = true
 ) {
-    fun toEntity() = PostEntity(
+    fun toEntity(visible: Boolean = true) = PostEntity(
         id = id,
         author = author,
         authorAvatar = authorAvatar,
@@ -74,9 +78,10 @@ data class PostResponseDto(
         shares = shares,
         views = views,
         likes = likes,
-        video = video
+        video = video,
+        visible = visible
     )
 }
 
 fun List<PostEntity>.toDTO() = map(PostEntity::toDTO)
-fun List<Post>.fromDto() = map(PostEntity.Companion::fromDTO)
+fun List<Post>.fromDto() = map { PostEntity.Companion.fromDTO(it, visible = true) }

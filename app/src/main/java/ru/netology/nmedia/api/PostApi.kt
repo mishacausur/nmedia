@@ -2,6 +2,7 @@ package ru.netology.nmedia.api
 
 import okhttp3.OkHttpClient
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
@@ -39,6 +40,9 @@ interface PostApi {
 
     @DELETE("posts/{id}/likes")
     suspend fun unlike(@Path("id") id: Long): Post
+
+    @GET("posts/{id}/newer")
+    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
 }
 
 object ApiService {
