@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.transition.Visibility
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
@@ -25,7 +26,6 @@ class FeedFragment : Fragment() {
     private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
     private val adapter = PostAdapter(object : OnActionListener {
         override fun onLike(post: Post) {
-            println("LIKE FOR")
             viewModel.like(post.id)
         }
 
@@ -69,14 +69,11 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
         val newPostsButton = binding.newPostsButton
+        var shouldScrollToTop = false
         newPostsButton.setOnClickListener {
-            println("Кнопка новых постов нажата")
             viewModel.showPendingPosts()
-            viewModel.pendingPosts.value?.let { posts ->
-                adapter.submitList(posts) {
-                    binding.list.scrollToPosition(0)
-                }
-            }
+            shouldScrollToTop = true
+            newPostsButton.isVisible = false
         }
 
         binding.swipeRefresh.setOnRefreshListener {
@@ -87,20 +84,18 @@ class FeedFragment : Fragment() {
             viewModel.loadPosts()
         }
 
-        viewModel.pendingPosts.observe(viewLifecycleOwner) { posts ->
-            if (viewModel.hasPendingPosts.value != true) {
-                adapter.submitList(posts) {
-                    binding.emptyText.isVisible = posts.isEmpty()
-                }
-            }
-        }
-        viewModel.hasPendingPosts.observe(viewLifecycleOwner) { hasPending ->
-            println("hasPendingPosts = $hasPending")
-            newPostsButton.isVisible = hasPending
+        viewModel.newerCount.observe(viewLifecycleOwner) { count ->
+            newPostsButton.isVisible = count > 0
         }
 
         viewModel.data.observe(viewLifecycleOwner) { data ->
-            viewModel.onPostsLoaded(data.posts)
+            adapter.submitList(data.posts) {
+                binding.emptyText.isVisible = data.empty
+                if (shouldScrollToTop) {
+                    binding.list.scrollToPosition(0)
+                    shouldScrollToTop = false
+                }
+            }
             viewModel.state.observe(viewLifecycleOwner) { state ->
                 binding.progress.isVisible = state.loading
                 binding.errorGroup.isVisible = state.error
@@ -134,10 +129,6 @@ class FeedFragment : Fragment() {
 
         viewModel.postCreated.observe(viewLifecycleOwner) {
             viewModel.loadPosts()
-        }
-
-        viewModel.newerCount.observe(viewLifecycleOwner) {
-            println(it)
         }
 
         return binding.root
