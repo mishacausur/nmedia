@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.transition.Visibility
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
@@ -25,7 +26,6 @@ class FeedFragment : Fragment() {
     private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
     private val adapter = PostAdapter(object : OnActionListener {
         override fun onLike(post: Post) {
-            println("LIKE FOR")
             viewModel.like(post.id)
         }
 
@@ -68,6 +68,13 @@ class FeedFragment : Fragment() {
         )
 
         binding.list.adapter = adapter
+        val newPostsButton = binding.newPostsButton
+        var shouldScrollToTop = false
+        newPostsButton.setOnClickListener {
+            viewModel.showPendingPosts()
+            shouldScrollToTop = true
+            newPostsButton.isVisible = false
+        }
 
         binding.swipeRefresh.setOnRefreshListener {
             viewModel.loadPosts()
@@ -77,16 +84,18 @@ class FeedFragment : Fragment() {
             viewModel.loadPosts()
         }
 
-        viewModel.data.observe(viewLifecycleOwner) { data ->
-            val isNewPost = adapter.currentList.size < data.posts.size
-            adapter.submitList(data.posts) {
+        viewModel.newerCount.observe(viewLifecycleOwner) { count ->
+            newPostsButton.isVisible = count > 0
+        }
 
+        viewModel.data.observe(viewLifecycleOwner) { data ->
+            adapter.submitList(data.posts) {
                 binding.emptyText.isVisible = data.empty
-                if (isNewPost) {
+                if (shouldScrollToTop) {
                     binding.list.scrollToPosition(0)
+                    shouldScrollToTop = false
                 }
             }
-
             viewModel.state.observe(viewLifecycleOwner) { state ->
                 binding.progress.isVisible = state.loading
                 binding.errorGroup.isVisible = state.error
@@ -121,6 +130,7 @@ class FeedFragment : Fragment() {
         viewModel.postCreated.observe(viewLifecycleOwner) {
             viewModel.loadPosts()
         }
+
         return binding.root
     }
 

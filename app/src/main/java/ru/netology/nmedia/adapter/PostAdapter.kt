@@ -13,6 +13,9 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.utils.toURLOrNull
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 interface OnActionListener {
     fun onLike(post: Post)
@@ -49,7 +52,7 @@ class PostViewHolder(
 
     private fun bindPostData(post: Post) = with(binding) {
         author.text = post.author
-        published.text = post.published
+        published.text = formatDate(post.published.toLong())
         content.text = post.content
         viewsCount.text = Counter.localizeCount(post.views)
         likes.apply {
@@ -101,6 +104,12 @@ class PostViewHolder(
                 }
             }.show()
         }
+    }
+
+    fun formatDate(timestampMillis: Long): String {
+        val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
+        val date = Date(timestampMillis * 1000)
+        return sdf.format(date)
     }
 }
 

@@ -1,6 +1,10 @@
 package ru.netology.nmedia.repository
-
-import androidx.lifecycle.map
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
@@ -10,9 +14,33 @@ import ru.netology.nmedia.entity.toDTO
 
 class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
 
-    override val data = dao.getAll().map {
-        it.toDTO()
+    override val data = dao
+        .getAll()
+        .map(List<PostEntity>::toDTO)
+
+    override fun newerCount(id: Long): Flow<Int> = flow {
+        while (true) {
+            delay(10_000)
+            val reponse = ApiService.service.getNewer(id)
+            if (!reponse.isSuccessful) {
+                throw HttpException(reponse.code())
+            }
+            val body = reponse.body() ?: throw  HttpException(reponse.code())
+            body.fromDto().forEach {
+                dao.insert(it.copy(visible = false))
+            }
+            emit(body.size)
+        }
+    }.catch {
+        throw it
     }
+
+    override suspend fun setAllVisible() {
+        dao.setAllVisible()
+    }
+
+    override fun getNewerLocalCount(): Flow<Int> = dao.getNewerCount()
+
 
     override suspend fun like(postId: Long) {
         val isLiked = dao.getById(postId)?.isLiked ?: return
@@ -76,7 +104,7 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
         try {
             val posts = ApiService.service.getAll()
             posts.fromDto().forEach {
-                dao.insert(it)
+                dao.insert(it.copy(visible = true))
             }
         } catch (e: Exception) {
             throw e
