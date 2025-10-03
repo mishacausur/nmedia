@@ -8,9 +8,18 @@ import ru.netology.nmedia.dto.Token
 
 class AppAuth private constructor(context: Context) {
 
-    private companion object {
-        const val ID_KEY = "ID_KEY"
-        const val TOKEN_KEY = "TOKEN_KEY"
+    companion object {
+        private const val ID_KEY = "ID_KEY"
+        private const val TOKEN_KEY = "TOKEN_KEY"
+        private var INSTANCE: AppAuth? = null
+
+        fun init(context: Context) {
+            INSTANCE = AppAuth(context)
+        }
+
+        fun getInstance() = requireNotNull(INSTANCE) {
+            "Need to be initialazed first"
+        }
     }
 
     private val preferences = context.applicationContext.getSharedPreferences(

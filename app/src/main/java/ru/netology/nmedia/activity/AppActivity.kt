@@ -7,16 +7,59 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import android.Manifest
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.activity.viewModels
+import androidx.core.view.MenuProvider
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.repository.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
+    private val authViewModel by viewModels<AuthViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         requestNotificationPermission()
 
+        addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater
+                ) {
+                    menuInflater.inflate(R.menu.auth_menu, menu)
+                    authViewModel.data.observe(this@AppActivity) {
+                        val isAuth = authViewModel.isAuth
+
+                        menu.setGroupVisible(R.id.authorized, isAuth)
+                        menu.setGroupVisible(R.id.unauthorized, !isAuth)
+                    }
+                }
+
+                override fun onMenuItemSelected(
+                    menuItem: MenuItem
+                ): Boolean = when (menuItem.itemId) {
+                    R.id.signin -> {
+                        AppAuth.getInstance().setAuth(5, "x-token")
+                        true
+                    }
+                    R.id.signup -> {
+                        AppAuth.getInstance().setAuth(5, "x-token")
+                        true
+                    }
+                    R.id.logout -> {
+                        AppAuth.getInstance().unauth()
+                        true
+                    }
+                    else -> false
+                }
+
+            }
+        )
         intent?.let {
             if (it.action != Intent.ACTION_SEND) {
                 return@let

@@ -1,5 +1,6 @@
 package ru.netology.nmedia.api
 
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Response
@@ -11,11 +12,20 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
 import java.util.concurrent.TimeUnit
 
 private val client = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
+    .addInterceptor { chain ->
+        val request = AppAuth.getInstance().data.value?.let { token ->
+            chain.request().newBuilder()
+                .addHeader("Authorization", token.token)
+                .build()
+        } ?: chain.request()
+        chain.proceed(request)
+    }
     .build()
 
 private val retrofit = Retrofit.Builder()
