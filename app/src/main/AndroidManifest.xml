@@ -29,6 +29,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.LoginActivity"
+            android:exported="false" />
         <service
             android:name=".service.FCMService"
             android:exported="false">

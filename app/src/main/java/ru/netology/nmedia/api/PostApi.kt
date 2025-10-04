@@ -11,6 +11,8 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.Path
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
@@ -58,5 +60,26 @@ interface PostApi {
 object ApiService {
     val service by lazy {
         retrofit.create<PostApi>()
+    }
+}
+
+interface AuthApi {
+    @FormUrlEncoded
+    @POST("users/authentication")
+    suspend fun authenticate(
+        @Field("login") login: String,
+        @Field("pass") pass: String,
+    ): ru.netology.nmedia.dto.Token
+}
+
+object AuthService {
+    private val authRetrofit = Retrofit.Builder()
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl("http://10.0.2.2:9999/api/")
+        .build()
+
+    val service: AuthApi by lazy {
+        authRetrofit.create()
     }
 }

@@ -44,11 +44,11 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                     menuItem: MenuItem
                 ): Boolean = when (menuItem.itemId) {
                     R.id.signin -> {
-                        AppAuth.getInstance().setAuth(5, "x-token")
+                        startActivity(Intent(this@AppActivity, LoginActivity::class.java))
                         true
                     }
                     R.id.signup -> {
-                        AppAuth.getInstance().setAuth(5, "x-token")
+                        startActivity(Intent(this@AppActivity, LoginActivity::class.java))
                         true
                     }
                     R.id.logout -> {
