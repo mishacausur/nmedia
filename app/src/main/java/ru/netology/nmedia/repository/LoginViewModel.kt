@@ -20,7 +20,7 @@ class LoginViewModel : ViewModel() {
 
     fun login(login: String, pass: String) {
         if (login.isBlank() || pass.isBlank()) {
-            _state.value = LoginState(error = "Enter your credentioals")
+            _state.value = LoginState(error = "Enter your credentials")
             return
         }
         _state.value = LoginState(loading = true)
@@ -30,7 +30,7 @@ class LoginViewModel : ViewModel() {
                 AppAuth.getInstance().setAuth(token.id, token.token)
                 _state.value = LoginState(success = true)
             } catch (e: Exception) {
-                _state.value = LoginState(error = e.message ?: "Auth error occured")
+                _state.value = LoginState(error = e.message ?: "Auth error occurred")
             }
         }
     }

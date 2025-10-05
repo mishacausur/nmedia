@@ -24,6 +24,10 @@ class LoginActivity : AppCompatActivity(R.layout.activity_login) {
             )
         }
 
+        binding.cancelButton.setOnClickListener {
+            finish()
+        }
+
         viewModel.state.observe(this) { state ->
             binding.progress.visibility = if (state.loading) android.view.View.VISIBLE else android.view.View.GONE
             if (state.error != null) {
