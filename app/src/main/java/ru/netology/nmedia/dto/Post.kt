@@ -7,6 +7,7 @@ data class Post(
     val id: Long,
     val author: String,
     val authorAvatar: String?,
+    val authorId: Long,
     val published: String,
     val content: String,
     @SerializedName("likedByMe")
@@ -15,5 +16,6 @@ data class Post(
     val views: UInt = 0u,
     val likes: Int = 0,
     val video: URL? = null,
-    val visible: Boolean = true
+    val visible: Boolean = true,
+    val ownedByMe: Boolean = false
 )
