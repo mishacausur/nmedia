@@ -8,10 +8,12 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.repository.PostViewModel
 import ru.netology.nmedia.utils.StringArgs
 
+@AndroidEntryPoint
 class NewPostFragment : Fragment() {
 
     private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)

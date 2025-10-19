@@ -2,24 +2,21 @@ package ru.netology.nmedia.auth
 
 import android.content.Context
 import androidx.core.content.edit
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.netology.nmedia.dto.Token
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AppAuth private constructor(context: Context) {
+@Singleton
+class AppAuth @Inject constructor(
+    @ApplicationContext context: Context
+) {
 
     companion object {
         private const val ID_KEY = "ID_KEY"
         private const val TOKEN_KEY = "TOKEN_KEY"
-        private var INSTANCE: AppAuth? = null
-
-        fun init(context: Context) {
-            INSTANCE = AppAuth(context)
-        }
-
-        fun getInstance() = requireNotNull(INSTANCE) {
-            "Need to be initialazed first"
-        }
     }
 
     private val preferences = context.applicationContext.getSharedPreferences(

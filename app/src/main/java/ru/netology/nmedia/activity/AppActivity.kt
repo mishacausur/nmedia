@@ -12,12 +12,18 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.core.view.MenuProvider
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.repository.AuthViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
+
+    @Inject
+    lateinit var appAuth: AppAuth
 
     private val authViewModel by viewModels<AuthViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +58,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                         true
                     }
                     R.id.logout -> {
-                        AppAuth.getInstance().unauth()
+                        appAuth.unauth()
                         true
                     }
                     else -> false

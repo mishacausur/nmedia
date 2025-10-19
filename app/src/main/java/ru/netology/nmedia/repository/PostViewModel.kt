@@ -1,20 +1,19 @@
 package ru.netology.nmedia.repository
 
-import android.app.Application
 import androidx.lifecycle.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.FeedModel
 import ru.netology.nmedia.entity.FeedModelState
-import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.utils.SingleLiveEvent
 import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.auth.AppAuth
+import javax.inject.Inject
 
 class HttpException(val code: Int) : Throwable("HTTP error with code $code")
 
@@ -31,14 +30,15 @@ private val empty = Post(
     likes = 0,
 )
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: PostRepository = PostRepositoryNetworkImpl(
-        dao = AppDb.getInstance(application).postDao
-    )
+@HiltViewModel
+class PostViewModel @Inject constructor(
+    private val repository: PostRepository,
+    private val appAuth: AppAuth
+) : ViewModel() {
     private var draft: String? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val data: LiveData<FeedModel> = AppAuth.getInstance()
+    val data: LiveData<FeedModel> = appAuth
         .data
         .flatMapLatest { token ->
             repository.data.map { posts ->

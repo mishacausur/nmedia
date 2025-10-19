@@ -4,9 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import ru.netology.nmedia.api.AuthService
+import ru.netology.nmedia.api.AuthApi
 import ru.netology.nmedia.auth.AppAuth
+import javax.inject.Inject
 
 data class LoginState(
     val loading: Boolean = false,
@@ -14,7 +16,11 @@ data class LoginState(
     val success: Boolean = false,
 )
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val appAuth: AppAuth,
+    private val authApi: AuthApi
+) : ViewModel() {
     private val _state = MutableLiveData(LoginState())
     val state: LiveData<LoginState> = _state
 
@@ -26,8 +32,8 @@ class LoginViewModel : ViewModel() {
         _state.value = LoginState(loading = true)
         viewModelScope.launch {
             try {
-                val token = AuthService.service.authenticate(login, pass)
-                AppAuth.getInstance().setAuth(token.id, token.token)
+                val token = authApi.authenticate(login, pass)
+                appAuth.setAuth(token.id, token.token)
                 _state.value = LoginState(success = true)
             } catch (e: Exception) {
                 _state.value = LoginState(error = e.message ?: "Auth error occurred")
@@ -35,5 +41,6 @@ class LoginViewModel : ViewModel() {
         }
     }
 }
+
 
 
