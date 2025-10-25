@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.transition.Visibility
 import com.google.android.material.snackbar.Snackbar
@@ -25,7 +25,7 @@ import ru.netology.nmedia.repository.PostViewModel
 
 @AndroidEntryPoint
 class FeedFragment : Fragment() {
-    private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+    private val viewModel: PostViewModel by activityViewModels()
     private val adapter = PostAdapter(object : OnActionListener {
         override fun onLike(post: Post) {
             viewModel.like(post.id)
