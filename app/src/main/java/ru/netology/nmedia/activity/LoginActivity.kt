@@ -4,10 +4,12 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.ActivityLoginBinding
 import ru.netology.nmedia.repository.LoginViewModel
 
+@AndroidEntryPoint
 class LoginActivity : AppCompatActivity(R.layout.activity_login) {
     private lateinit var binding: ActivityLoginBinding
     private val viewModel: LoginViewModel by viewModels()

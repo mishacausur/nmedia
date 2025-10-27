@@ -5,14 +5,20 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import ru.netology.nmedia.api.ApiService
+import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.fromDto
 import ru.netology.nmedia.entity.toDTO
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
+@Singleton
+class PostRepositoryNetworkImpl @Inject constructor(
+    private val dao: PostDao,
+    private val postApi: PostApi
+) : PostRepository {
 
     override val data = dao
         .getAll()
@@ -21,7 +27,7 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
     override fun newerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(10_000)
-            val reponse = ApiService.service.getNewer(id)
+            val reponse = postApi.getNewer(id)
             if (!reponse.isSuccessful) {
                 throw HttpException(reponse.code())
             }
@@ -47,9 +53,9 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
         dao.like(postId)
         try {
             if (!isLiked) {
-                ApiService.service.like(postId)
+                postApi.like(postId)
             } else {
-                ApiService.service.unlike(postId)
+                postApi.unlike(postId)
             }
         } catch (e: Exception) {
             dao.like(postId)
@@ -84,7 +90,7 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
     override suspend fun remove(id: Long) {
         removeLocally(id)
         try {
-            ApiService.service.remove(id)
+            postApi.remove(id)
         } catch (e: Exception) {
             throw e
         }
@@ -92,7 +98,7 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
 
     override suspend fun save(post: Post): Post {
         try {
-            val response = ApiService.service.save(post)
+            val response = postApi.save(post)
             dao.insert(PostEntity.fromDTO(response))
             return response
         } catch (e: Exception) {
@@ -102,7 +108,7 @@ class PostRepositoryNetworkImpl(private val dao: PostDao) : PostRepository {
 
     override suspend fun getAllAsync() {
         try {
-            val posts = ApiService.service.getAll()
+            val posts = postApi.getAll()
             posts.fromDto().forEach {
                 dao.insert(it.copy(visible = true))
             }

@@ -6,15 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.repository.PostViewModel
 import ru.netology.nmedia.utils.StringArgs
 
+@AndroidEntryPoint
 class NewPostFragment : Fragment() {
 
-    private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+    private val viewModel: PostViewModel by activityViewModels()
     private lateinit var binding: FragmentNewPostBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
