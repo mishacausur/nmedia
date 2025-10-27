@@ -101,5 +101,13 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hilt_version"
     implementation "androidx.paging:paging-runtime-ktx:3.3.6"
     ksp "com.google.dagger:hilt-compiler:$hilt_version"
+    
+    // Hilt testing dependencies
+    testImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    kspTest "com.google.dagger:hilt-compiler:$hilt_version"
+    
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    kspAndroidTest "com.google.dagger:hilt-compiler:$hilt_version"
+    
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$core_desugaring_version"
 }
