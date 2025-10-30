@@ -15,6 +15,9 @@ interface PostApi {
     @GET("posts")
     suspend fun getAll(): List<Post>
 
+    @GET("latest")
+    suspend fun getLatest(): List<Post>
+
     @POST("posts")
     suspend fun save(@Body post: Post): Post
 
