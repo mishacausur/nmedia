@@ -8,6 +8,7 @@ import retrofit2.http.POST
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.Path
+import retrofit2.http.Query
 import ru.netology.nmedia.dto.Post
 
 interface PostApi {
@@ -15,8 +16,8 @@ interface PostApi {
     @GET("posts")
     suspend fun getAll(): List<Post>
 
-    @GET("latest")
-    suspend fun getLatest(): List<Post>
+    @GET("posts/latest")
+    suspend fun getLatest(@Query("count") count: Int): Response<List<Post>>
 
     @POST("posts")
     suspend fun save(@Body post: Post): Post
@@ -32,6 +33,12 @@ interface PostApi {
 
     @GET("posts/{id}/newer")
     suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
+
+    @GET("posts/{id}/before")
+    suspend fun getBefore(@Path("id") id: Long, @Query("count") count: Int): Response<List<Post>>
+
+    @GET("posts/{id}/after")
+    suspend fun getAfter(@Path("id") id: Long, @Query("count") count: Int): Response<List<Post>>
 }
 
 interface AuthApi {
