@@ -21,3 +21,4 @@ object FirebaseModule {
     fun provideGoogleApiAvailability(): GoogleApiAvailability = GoogleApiAvailability.getInstance()
 }
 
+

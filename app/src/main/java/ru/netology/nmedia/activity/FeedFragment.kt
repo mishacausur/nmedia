@@ -9,10 +9,13 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import androidx.transition.Visibility
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.activity.PostFragment.Companion.longArgs
@@ -90,21 +93,36 @@ class FeedFragment : Fragment() {
             newPostsButton.isVisible = count > 0
         }
 
-        viewModel.data.observe(viewLifecycleOwner) { data ->
-            adapter.submitList(data.posts) {
-                binding.emptyText.isVisible = data.empty
-                if (shouldScrollToTop) {
-                    binding.list.scrollToPosition(0)
-                    shouldScrollToTop = false
-                }
+        lifecycleScope.launchWhenCreated {
+            viewModel.data.collectLatest {
+                adapter.submitData(it)
             }
-            viewModel.state.observe(viewLifecycleOwner) { state ->
-                binding.progress.isVisible = state.loading
-                binding.errorGroup.isVisible = state.error
-            }
-            binding.swipeRefresh.isRefreshing = false
         }
-        binding.swipeRefresh.isRefreshing = true
+
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest {
+                binding.swipeRefresh.isRefreshing = it.refresh is LoadState.Loading
+                        || it.append is LoadState.Loading
+                        || it.prepend is LoadState.Loading
+            }
+        }
+//        viewModel.data.observe(viewLifecycleOwner) { data ->
+//            adapter.submitList(data.posts) {
+//                binding.emptyText.isVisible = data.empty
+//                if (shouldScrollToTop) {
+//                    binding.list.scrollToPosition(0)
+//                    shouldScrollToTop = false
+//                }
+//            }
+//            viewModel.state.observe(viewLifecycleOwner) { state ->
+//                binding.progress.isVisible = state.loading
+//                binding.errorGroup.isVisible = state.error
+//            }
+//            binding.swipeRefresh.isRefreshing = false
+//        }
+        binding.swipeRefresh.setOnRefreshListener {
+            adapter.refresh()
+        }
 
         binding.addButton.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)

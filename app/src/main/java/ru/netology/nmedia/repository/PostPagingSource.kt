@@ -18,7 +18,9 @@ class PostPagingSource(
             val response = when (params) {
                 is LoadParams.Refresh -> apiService.getLatest(params.loadSize)
 
-                is LoadParams.Append -> apiService.getBefore(id = params.key, count = params.loadSize)
+                is LoadParams.Append -> {
+                    apiService.getBefore(id = params.key, count = params.loadSize)
+                }
 
                 is LoadParams.Prepend -> return LoadResult.Page(
                     data = emptyList(), nextKey = null, prevKey = params.key
@@ -30,11 +32,14 @@ class PostPagingSource(
             }
             val data = response.body().orEmpty()
             return LoadResult.Page(
-                data,
+                data = data,
                 prevKey = params.key,
-                data.lastOrNull()?.id)
+                nextKey = data.lastOrNull()?.id
+            )
 
         } catch (e: IOException) {
+            return LoadResult.Error(e)
+        } catch (e: HttpException) {
             return LoadResult.Error(e)
         }
     }

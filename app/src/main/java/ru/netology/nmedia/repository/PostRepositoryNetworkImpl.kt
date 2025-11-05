@@ -1,4 +1,6 @@
 package ru.netology.nmedia.repository
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -7,7 +9,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import okhttp3.Dispatcher
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
@@ -23,10 +24,14 @@ class PostRepositoryNetworkImpl @Inject constructor(
     private val postApi: PostApi
 ) : PostRepository {
 
-    override val data = dao
-        .getAll()
-        .map(List<PostEntity>::toDTO)
-        .flowOn(Dispatchers.Default)
+    override val data = Pager(
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+        pagingSourceFactory = {
+            PostPagingSource(
+                apiService = postApi
+            )
+        }
+    ).flow
 
     override fun newerCount(id: Long): Flow<Int> = flow {
         while (true) {
@@ -128,5 +133,9 @@ class PostRepositoryNetworkImpl @Inject constructor(
             isLiked = liked,
             likes = if (liked) post.likes + 1 else post.likes - 1
         ))
+    }
+
+    override suspend fun getPostById(postId: Long): Post? {
+        return dao.getById(postId)?.toDTO()
     }
 }
