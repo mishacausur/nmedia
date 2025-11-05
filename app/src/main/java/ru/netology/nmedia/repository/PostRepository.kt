@@ -17,4 +17,5 @@ interface PostRepository {
     suspend fun setAllVisible()
     fun getNewerLocalCount(): Flow<Int>
     suspend fun getPostById(postId: Long): Post?
+    suspend fun clearAll()
 }

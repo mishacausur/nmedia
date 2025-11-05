@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.FeedModelState
@@ -74,6 +75,11 @@ class PostViewModel @Inject constructor(
 
     init {
         loadPosts()
+        viewModelScope.launch {
+            appAuth.data.drop(1).collect { token ->
+                reloadPostsAfterAuthChange()
+            }
+        }
     }
 
     fun retryLoad() {
@@ -84,6 +90,19 @@ class PostViewModel @Inject constructor(
         _state.value = FeedModelState(loading = true)
         viewModelScope.launch {
             try {
+                repository.getAllAsync()
+                _state.value = FeedModelState()
+            } catch (_: Exception) {
+                _state.value = FeedModelState(error = true)
+            }
+        }
+    }
+
+    private fun reloadPostsAfterAuthChange() {
+        _state.value = FeedModelState(loading = true)
+        viewModelScope.launch {
+            try {
+                repository.clearAll()
                 repository.getAllAsync()
                 _state.value = FeedModelState()
             } catch (_: Exception) {

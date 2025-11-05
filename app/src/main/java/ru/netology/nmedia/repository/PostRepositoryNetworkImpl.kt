@@ -138,4 +138,8 @@ class PostRepositoryNetworkImpl @Inject constructor(
     override suspend fun getPostById(postId: Long): Post? {
         return dao.getById(postId)?.toDTO()
     }
+
+    override suspend fun clearAll() {
+        dao.clearAll()
+    }
 }

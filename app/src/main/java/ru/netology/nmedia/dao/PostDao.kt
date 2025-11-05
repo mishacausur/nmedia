@@ -51,4 +51,7 @@ interface PostDao {
 
     @Query("SELECT COUNT(*) FROM PostEntity WHERE visible = 0")
     fun getNewerCount(): Flow<Int>
+
+    @Query("DELETE FROM PostEntity")
+    suspend fun clearAll()
 }
