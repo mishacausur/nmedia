@@ -17,3 +17,4 @@ abstract class RepositoryModule {
     abstract fun bindPostRepository(impl: PostRepositoryNetworkImpl): PostRepository
 }
 
+

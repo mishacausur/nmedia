@@ -4,12 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.Counter
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
@@ -19,7 +23,6 @@ import ru.netology.nmedia.databinding.FragmentPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostViewModel
 import ru.netology.nmedia.utils.LongArgs
-import ru.netology.nmedia.utils.toURLOrNull
 
 @AndroidEntryPoint
 class PostFragment : Fragment() {
@@ -37,6 +40,7 @@ class PostFragment : Fragment() {
         )
 
         val postCardBinding = binding.post
+        val postId = requireArguments().longArgs
 
         val viewHolder = PostViewHolder(
             postCardBinding,
@@ -65,10 +69,43 @@ class PostFragment : Fragment() {
                 override fun onOpenPost(postId: Long) = Unit
             })
 
-        val postId = requireArguments().longArgs
-        val post = viewModel.data.value?.posts?.find { it.id == postId }
+        lifecycleScope.launch {
+            val post = viewModel.getPostById(postId)
+            post?.let { p ->
+                viewHolder.bind(p)
+                with(binding.post) {
+                    likes.apply {
+                        text = Counter.localizeCount(p.likes.toUInt())
+                        isChecked = p.isLiked
+                    }
+                    share.apply {
+                        text = Counter.localizeCount(p.shares)
+                    }
+                    viewsCount.text = Counter.localizeCount(p.views)
+                }
+            }
+        }
+        
 
-        post?.let { viewHolder.bind(it) }
+        lifecycleScope.launch {
+            viewModel.data.collect {
+                lifecycleScope.launch {
+                    val post = viewModel.getPostById(postId)
+                    post?.let { p ->
+                        with(binding.post) {
+                            likes.apply {
+                                text = Counter.localizeCount(p.likes.toUInt())
+                                isChecked = p.isLiked
+                            }
+                            share.apply {
+                                text = Counter.localizeCount(p.shares)
+                            }
+                            viewsCount.text = Counter.localizeCount(p.views)
+                        }
+                    }
+                }
+            }
+        }
 
         viewModel.edited.observe(viewLifecycleOwner) {
             if (!it.content.isBlank()) {
@@ -81,19 +118,6 @@ class PostFragment : Fragment() {
             }
         }
 
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            val _post = state.posts.find { it.id == postId } ?: return@observe
-                with(binding.post) {
-                likes.apply {
-                    text = Counter.localizeCount(_post.likes.toUInt())
-                }
-                share.apply {
-                    text = Counter.localizeCount(_post.shares)
-                }
-                viewsCount.text = Counter.localizeCount(_post.views)
-            }
-
-        }
         return binding.root
     }
 

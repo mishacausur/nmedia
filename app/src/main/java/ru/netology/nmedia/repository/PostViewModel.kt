@@ -1,17 +1,22 @@
 package ru.netology.nmedia.repository
 
 import androidx.lifecycle.*
+import androidx.paging.PagingData
+import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.entity.FeedModel
 import ru.netology.nmedia.entity.FeedModelState
 import ru.netology.nmedia.utils.SingleLiveEvent
-import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.auth.AppAuth
 import javax.inject.Inject
 
@@ -38,34 +43,25 @@ class PostViewModel @Inject constructor(
     private var draft: String? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val data: LiveData<FeedModel> = appAuth
+    val data: Flow<PagingData<Post>> = appAuth
         .data
         .flatMapLatest { token ->
             repository.data.map { posts ->
-                FeedModel(
-                    posts = posts.map { post ->
-                        post.copy(ownedByMe = post.authorId == token?.id)
-                    },
-                    empty = posts.isEmpty(),
-                )
+                posts.map { post ->
+                    post.copy(ownedByMe = post.authorId == token?.id)
+                }
             }
         }
+        .flowOn(Dispatchers.Default)
+
+    val newerCount = repository.getNewerLocalCount()
         .catch {
-            it.printStackTrace()
+            _state.postValue(
+                FeedModelState(error = true)
+            )
+            _errorMessage.postValue("Error while updating occured")
         }
         .asLiveData(Dispatchers.Default)
-
-    val newerCount = data.switchMap {
-        repository
-            .newerCount(it.posts.firstOrNull()?.id ?: 0L)
-            .catch {
-                _state.postValue(
-                    FeedModelState(error = true)
-                )
-                _errorMessage.postValue("Error while updating occured")
-            }
-            .asLiveData(Dispatchers.Default)
-    }
     private val _state = MutableLiveData(FeedModelState())
     val state: LiveData<FeedModelState>
         get() = _state
@@ -79,6 +75,11 @@ class PostViewModel @Inject constructor(
 
     init {
         loadPosts()
+        viewModelScope.launch {
+            appAuth.data.drop(1).collect { token ->
+                reloadPostsAfterAuthChange()
+            }
+        }
     }
 
     fun retryLoad() {
@@ -89,6 +90,19 @@ class PostViewModel @Inject constructor(
         _state.value = FeedModelState(loading = true)
         viewModelScope.launch {
             try {
+                repository.getAllAsync()
+                _state.value = FeedModelState()
+            } catch (_: Exception) {
+                _state.value = FeedModelState(error = true)
+            }
+        }
+    }
+
+    private fun reloadPostsAfterAuthChange() {
+        _state.value = FeedModelState(loading = true)
+        viewModelScope.launch {
+            try {
+                repository.clearAll()
                 repository.getAllAsync()
                 _state.value = FeedModelState()
             } catch (_: Exception) {
@@ -165,4 +179,6 @@ class PostViewModel @Inject constructor(
             repository.setAllVisible()
         }
     }
+
+    suspend fun getPostById(postId: Long): Post? = repository.getPostById(postId)
 }
