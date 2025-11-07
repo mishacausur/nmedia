@@ -1,46 +1,50 @@
 package ru.netology.nmedia.repository
 
-import androidx.paging.PagingSource
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.LoadType
 import androidx.paging.PagingState
+import androidx.paging.RemoteMediator
 import retrofit2.HttpException
 import ru.netology.nmedia.api.PostApi
+import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
-import java.io.IOException
+import ru.netology.nmedia.entity.PostEntity
 
-class PostPagingSource(
-    private val apiService: PostApi
-) : PagingSource<Long, Post>() {
+@OptIn(ExperimentalPagingApi::class)
+class PostRemoteMediator(
+    private val apiService: PostApi,
+    private val postDao: PostDao
+) : RemoteMediator<Int, PostEntity>() {
 
-    override fun getRefreshKey(state: PagingState<Long, Post>): Long? = null
-
-    override suspend fun load(params: LoadParams<Long>): LoadResult<Long, Post> {
+    override suspend fun load(loadType: LoadType, state: PagingState<Int, PostEntity>): MediatorResult {
         try {
-            val response = when (params) {
-                is LoadParams.Refresh -> apiService.getLatest(params.loadSize)
+            val response = when (loadType) {
+                LoadType.REFRESH -> apiService.getLatest(state.config.pageSize)
 
-                is LoadParams.Append -> {
-                    apiService.getBefore(id = params.key, count = params.loadSize)
+                LoadType.PREPEND -> {
+                    val id = state.firstItemOrNull()?.id ?: return MediatorResult.Success(false)
+                    apiService.getAfter(id, state.config.pageSize)
                 }
 
-                is LoadParams.Prepend -> return LoadResult.Page(
-                    data = emptyList(), nextKey = null, prevKey = params.key
-                )
+                LoadType.APPEND -> {
+                    val id = state.lastItemOrNull()?.id ?: return MediatorResult.Success(false)
+                    apiService.getBefore(id, state.config.pageSize)
+                }
             }
 
             if (!response.isSuccessful) {
                 throw HttpException(response)
             }
             val data = response.body().orEmpty()
-            return LoadResult.Page(
-                data = data,
-                prevKey = params.key,
-                nextKey = data.lastOrNull()?.id
+            data.forEach {
+                postDao.insert(PostEntity.fromDTO(it))
+            }
+            return MediatorResult.Success(
+                response.body()?.isEmpty() ?: true
             )
 
-        } catch (e: IOException) {
-            return LoadResult.Error(e)
-        } catch (e: HttpException) {
-            return LoadResult.Error(e)
+        } catch (e: Exception) {
+            return MediatorResult.Error(e)
         }
     }
 }
