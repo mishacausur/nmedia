@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.fromDto
@@ -22,8 +24,10 @@ import javax.inject.Singleton
 
 @Singleton
 class PostRepositoryNetworkImpl @Inject constructor(
+    private val appDb: AppDb,
     private val dao: PostDao,
-    private val postApi: PostApi
+    val postRemoteKeyDao: PostRemoteKeyDao,
+    val postApi: PostApi
 ) : PostRepository {
 
     @OptIn(ExperimentalPagingApi::class)
@@ -32,7 +36,7 @@ class PostRepositoryNetworkImpl @Inject constructor(
         pagingSourceFactory = {
             dao.getPagingSource()
         },
-        remoteMediator = PostRemoteMediator(postApi, dao)
+        remoteMediator = PostRemoteMediator(appDb, postApi, dao, postRemoteKeyDao)
     ).flow
         .map {
             it.map(PostEntity::toDTO)
