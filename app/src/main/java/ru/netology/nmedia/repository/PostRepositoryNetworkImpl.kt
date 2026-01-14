@@ -1,18 +1,21 @@
 package ru.netology.nmedia.repository
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import kotlinx.coroutines.Dispatchers
+import androidx.paging.map
+import androidx.room.withTransaction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.entity.PostRemoteKeyEntity
 import ru.netology.nmedia.entity.fromDto
 import ru.netology.nmedia.entity.toDTO
 import javax.inject.Inject
@@ -20,18 +23,23 @@ import javax.inject.Singleton
 
 @Singleton
 class PostRepositoryNetworkImpl @Inject constructor(
+    private val appDb: AppDb,
     private val dao: PostDao,
+    private val postRemoteKeyDao: PostRemoteKeyDao,
     private val postApi: PostApi
 ) : PostRepository {
 
+    @OptIn(ExperimentalPagingApi::class)
     override val data = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
-            PostPagingSource(
-                apiService = postApi
-            )
-        }
+            dao.getPagingSource()
+        },
+        remoteMediator = PostRemoteMediator(appDb, postApi, dao, postRemoteKeyDao)
     ).flow
+        .map {
+            it.map(PostEntity::toDTO)
+        }
 
     override fun newerCount(id: Long): Flow<Int> = flow {
         while (true) {
@@ -41,8 +49,10 @@ class PostRepositoryNetworkImpl @Inject constructor(
                 throw HttpException(reponse.code())
             }
             val body = reponse.body() ?: throw  HttpException(reponse.code())
-            body.fromDto().forEach {
-                dao.insert(it.copy(visible = false))
+            if (body.isNotEmpty()) {
+                val entities = body.map { PostEntity.fromDTO(it, visible = false) }
+                dao.insert(entities)
+                updateRemoteKeys()
             }
             emit(body.size)
         }
@@ -117,9 +127,22 @@ class PostRepositoryNetworkImpl @Inject constructor(
 
     override suspend fun getAllAsync() {
         try {
-            val posts = postApi.getAll()
-            posts.fromDto().forEach {
-                dao.insert(it.copy(visible = true))
+            val latestId = dao.getLatestId()
+            val response = if (latestId == null) {
+                postApi.getLatest(10)
+            } else {
+                postApi.getAfter(latestId, 10)
+            }
+            if (!response.isSuccessful) {
+                throw HttpException(response.code())
+            }
+            val posts = response.body().orEmpty()
+            if (posts.isNotEmpty()) {
+                val entities = posts.fromDto()
+                appDb.withTransaction {
+                    dao.insert(entities)
+                    updateRemoteKeys()
+                }
             }
         } catch (e: Exception) {
             throw e
@@ -141,5 +164,19 @@ class PostRepositoryNetworkImpl @Inject constructor(
 
     override suspend fun clearAll() {
         dao.clearAll()
+        postRemoteKeyDao.clear()
+    }
+
+    private suspend fun updateRemoteKeys() {
+        val latest = dao.getLatestId()
+        val oldest = dao.getOldestId()
+        if (latest != null && oldest != null) {
+            postRemoteKeyDao.insert(
+                listOf(
+                    PostRemoteKeyEntity(PostRemoteKeyEntity.KeyType.AFTER, latest),
+                    PostRemoteKeyEntity(PostRemoteKeyEntity.KeyType.BEFORE, oldest)
+                )
+            )
+        }
     }
 }
